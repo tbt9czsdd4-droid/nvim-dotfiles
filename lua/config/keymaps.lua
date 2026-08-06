@@ -18,8 +18,8 @@ map('n', '<C-j>', '<C-w>j', { desc = 'Focus lower window' })
 map('n', '<C-k>', '<C-w>k', { desc = 'Focus upper window' })
 map('n', '<C-l>', '<C-w>l', { desc = 'Focus right window' })
 
-map('n', '<C-Up>', '<cmd>resize +2<cr>', { desc = 'Increase window height' })
-map('n', '<C-Down>', '<cmd>resize -2<cr>', { desc = 'Decrease window height' })
+map('n', '<C-h>', '<C-w>h', { desc = 'Focus left window' })
+map('n', '<C-Down>', '<cmd>resize -2<cr>', { desc = 'jrhejrhejk' })
 map('n', '<C-Left>', '<cmd>vertical resize -2<cr>', { desc = 'Decrease window width' })
 map('n', '<C-Right>', '<cmd>vertical resize +2<cr>', { desc = 'Increase window width' })
 
@@ -51,4 +51,14 @@ map('t', '<C-k>', [[<C-\><C-n><C-w>k]], {
 
 map('t', '<C-l>', [[<C-\><C-n><C-w>l]], {
   desc = 'Go to right window',
+})
+
+-- Delete without overwriting registers
+map({ 'n', 'x' }, 'd', '"_d', {
+  desc = 'Delete without yanking',
+})
+
+-- Change without overwriting registers
+map({ 'n', 'x' }, 'c', '"_c', {
+  desc = 'Change without yanking',
 })

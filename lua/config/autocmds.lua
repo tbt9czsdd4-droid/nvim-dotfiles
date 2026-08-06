@@ -11,6 +11,14 @@ local function wipe_directory_buffers()
   end
 end
 
+local function set_line_number_highlight()
+  vim.api.nvim_set_hl(0, 'CursorLineNr', {
+    fg = '#ff9e64',
+    bg = '#2a2e36',
+    bold = true,
+  })
+end
+
 vim.api.nvim_create_autocmd('User', {
   pattern = 'PersistenceSavePre',
   callback = wipe_directory_buffers,
@@ -31,4 +39,9 @@ autocmd('BufReadPost', {
     local line_count = vim.api.nvim_buf_line_count(event.buf)
     if mark[1] > 0 and mark[1] <= line_count then pcall(vim.api.nvim_win_set_cursor, 0, mark) end
   end,
+})
+set_line_number_highlight()
+
+vim.api.nvim_create_autocmd('ColorScheme', {
+  callback = set_line_number_highlight,
 })
