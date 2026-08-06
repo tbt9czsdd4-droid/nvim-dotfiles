@@ -1,11 +1,33 @@
 vim.loader.enable()
 
 -- Must be defined before lazy.nvim loads any plugin specs.
-vim.g.mapleader = " "
-vim.g.maplocalleader = "\\"
+vim.g.mapleader = ' '
+vim.g.maplocalleader = '\\'
 vim.g.have_nerd_font = true
 
-require("config.options")
-require("config.keymaps")
-require("config.autocmds")
-require("config.lazy")
+vim.api.nvim_create_autocmd('VimEnter', {
+  once = true,
+  callback = function()
+    if vim.fn.argc() ~= 1 then return end
+
+    local arg = vim.fn.argv(0)
+    local path = vim.fn.fnamemodify(arg, ':p')
+
+    if vim.fn.isdirectory(path) == 1 then
+      vim.api.nvim_set_current_dir(path)
+
+      -- Let directory/explorer startup handling finish first, then remove
+      -- the directory argument so it is not written into project sessions.
+      vim.schedule(function() vim.cmd 'silent! %argdelete' end)
+    end
+  end,
+})
+
+-- experimental
+vim.o.cmdheight = 0
+require('vim._core.ui2').enable {}
+
+require 'config.options'
+require 'config.keymaps'
+require 'config.autocmds'
+require 'config.lazy'

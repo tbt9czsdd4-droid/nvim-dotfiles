@@ -99,6 +99,10 @@ return {
       },
     },
   },
+  -- {
+  --   'rachartier/tiny-cmdline.nvim',
+  --   init = function() vim.o.cmdheight = 0 end,
+  -- },
   {
     'nvim-mini/mini.nvim',
     version = false,
@@ -117,9 +121,27 @@ return {
         },
       }
 
-      -- require('mini.starter').setup {}
+      require('mini.files').setup {
+        options = {
+          -- Keep Snacks as the explorer used for `nvim <directory>`.
+          use_as_default_explorer = false,
+        },
+        windows = {
+          preview = true,
+          width_focus = 30,
+          width_nofocus = 15,
+          width_preview = 50,
+        },
+      }
 
-      require('mini.files').setup {}
+      vim.keymap.set('n', '<leader>e', function()
+        local path = vim.api.nvim_buf_get_name(0)
+        local MiniFiles = require 'mini.files'
+
+        if path == '' then path = vim.uv.cwd() end
+
+        MiniFiles.open(path, false)
+      end, { desc = 'Open mini.files' })
 
       require('mini.move').setup {
         mappings = {
@@ -189,99 +211,6 @@ return {
     },
   },
 
-  {
-    'folke/noice.nvim',
-    event = 'VeryLazy',
-
-    dependencies = {
-      'MunifTanjim/nui.nvim',
-    },
-
-    opts = {
-      cmdline = {
-        enabled = true,
-        view = 'cmdline_popup',
-      },
-
-      popupmenu = {
-        enabled = true,
-        backend = 'nui',
-      },
-
-      lsp = {
-        override = {
-          ['vim.lsp.util.convert_input_to_markdown_lines'] = true,
-          ['vim.lsp.util.stylize_markdown'] = true,
-        },
-      },
-
-      routes = {
-        {
-          filter = {
-            event = 'msg_show',
-            any = {
-              { find = '%d+L, %d+B' },
-              { find = '; after #%d+' },
-              { find = '; before #%d+' },
-            },
-          },
-          view = 'mini',
-        },
-      },
-
-      presets = {
-        bottom_search = true,
-        command_palette = true,
-        long_message_to_split = true,
-        lsp_doc_border = true,
-      },
-    },
-
-    keys = {
-      {
-        '<leader>e',
-        function()
-          local path = vim.api.nvim_buf_get_name(0)
-
-          if path == '' then path = vim.uv.cwd() end
-
-          require('mini.files').open(path)
-        end,
-        desc = 'Mini files',
-      },
-      {
-        '<leader>sn',
-        '',
-        desc = 'Noice',
-      },
-      {
-        '<leader>snl',
-        function() require('noice').cmd 'last' end,
-        desc = 'Last message',
-      },
-      {
-        '<leader>snh',
-        function() require('noice').cmd 'history' end,
-        desc = 'Message history',
-      },
-      {
-        '<leader>sna',
-        function() require('noice').cmd 'all' end,
-        desc = 'All messages',
-      },
-      {
-        '<leader>snd',
-        function() require('noice').cmd 'dismiss' end,
-        desc = 'Dismiss messages',
-      },
-      {
-        '<S-Enter>',
-        function() require('noice').redirect(vim.fn.getcmdline()) end,
-        mode = 'c',
-        desc = 'Redirect command output',
-      },
-    },
-  },
   {
     'folke/which-key.nvim',
     event = 'VeryLazy',

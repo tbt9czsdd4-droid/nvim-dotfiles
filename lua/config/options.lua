@@ -28,6 +28,8 @@ opt.listchars = {
   nbsp = '␣',
 }
 
+vim.opt.sessionoptions:remove 'blank'
+
 opt.inccommand = 'split'
 opt.cursorline = true
 opt.scrolloff = 8

@@ -33,7 +33,22 @@ return {
     },
     config = function(_, opts)
       require('tokyonight').setup(opts)
-      vim.cmd.colorscheme 'tokyonight-night'
+      -- vim.cmd.colorscheme 'tokyonight-night'
+    end,
+  },
+  {
+    'scottmckendry/cyberdream.nvim',
+    lazy = false,
+    priority = 1000,
+    config = function()
+      require('cyberdream').setup {
+        variant = 'default',
+        transparent = true,
+        italic_keywords = false,
+        terminal_colors = false,
+        -- saturation = 0.97,
+      }
+      vim.cmd.colorscheme 'cyberdream'
     end,
   },
 }
