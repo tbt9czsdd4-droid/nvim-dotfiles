@@ -98,11 +98,11 @@ return {
         function() Snacks.explorer { cwd = project_root() } end,
         desc = 'Explorer (project)',
       },
-      -- {
-      --   '<leader>E',
-      --   function() Snacks.explorer() end,
-      --   desc = 'Explorer (cwd)',
-      -- },
+      {
+        '<leader>o',
+        function() Snacks.picker.treesitter() end,
+        desc = 'Code outline',
+      },
       {
         '<leader>ff',
         function() Snacks.picker.files { cwd = project_root() } end,
