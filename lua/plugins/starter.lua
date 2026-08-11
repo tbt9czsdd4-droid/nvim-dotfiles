@@ -21,7 +21,7 @@ return {
 
         items = {
           {
-            name = 'Recent',
+            name = 'Workspaces',
             section = 'Open',
             action = function() require('persistence').select() end,
           },
@@ -34,13 +34,9 @@ return {
           {
             name = 'Files',
             section = 'Open',
-            action = function() Snacks.picker.files() end,
+            action = function() Snacks.picker.recent() end,
           },
-          -- {
-          --   name = 'Directories',
-          --   section = 'Open',
-          --   action = function() require('mini.files').open(nil, false) end,
-          -- },
+
           {
             name = 'Config',
             section = 'Config',
