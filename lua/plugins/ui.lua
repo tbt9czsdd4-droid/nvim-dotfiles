@@ -99,10 +99,6 @@ return {
       },
     },
   },
-  -- {
-  --   'rachartier/tiny-cmdline.nvim',
-  --   init = function() vim.o.cmdheight = 0 end,
-  -- },
   {
     'nvim-mini/mini.nvim',
     version = false,
