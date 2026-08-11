@@ -23,7 +23,7 @@ return {
           {
             name = 'Recent',
             section = 'Open',
-            action = function() Snacks.picker.recent() end,
+            action = function() require('persistence').select() end,
           },
           {
             name = 'Projects',

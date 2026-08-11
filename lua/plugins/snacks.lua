@@ -25,7 +25,7 @@ return {
       },
       picker = {
         enabled = true,
-        ources = {
+        sources = {
           projects = {
             confirm = function(picker, item)
               -- Save the project we are leaving.
