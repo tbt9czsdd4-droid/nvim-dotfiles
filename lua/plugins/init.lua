@@ -1,5 +1,9 @@
 require 'plugins.tokyonight'
 require 'plugins.cyberdream'
+
+-- load colorscheme
+vim.cmd.colorscheme 'cyberdream'
+
 require 'plugins.snacks'
 require 'plugins.persistence'
 require 'plugins.mini'
