@@ -13,6 +13,36 @@ local function project_root()
     return vim.fs.root(start, root_markers) or vim.uv.cwd()
 end
 
+local function has_file_buffers()
+    for _, buffer in ipairs(vim.api.nvim_list_bufs()) do
+        if vim.bo[buffer].buftype == '' and vim.api.nvim_buf_get_name(buffer) ~= '' then return true end
+    end
+
+    return false
+end
+
+local function open_project(picker, item)
+    picker:close()
+    if not item then return end
+
+    local persistence = require 'persistence'
+
+    -- Preserve the project being left, but do not overwrite a session with
+    -- the empty dashboard state.
+    if has_file_buffers() then persistence.save() end
+
+    vim.fn.chdir(item.file)
+
+    local session = persistence.current()
+    local branchless_session = persistence.current { branch = false }
+
+    if vim.fn.filereadable(session) == 1 or vim.fn.filereadable(branchless_session) == 1 then
+        persistence.load()
+    else
+        Snacks.picker.files { cwd = item.file }
+    end
+end
+
 require('snacks').setup {
     explorer = {
         enabled = true,
@@ -22,10 +52,7 @@ require('snacks').setup {
         enabled = true,
         sources = {
             projects = {
-                confirm = function(picker, item)
-                    require('persistence').save()
-                    Snacks.picker.actions.load_session(picker, item)
-                end,
+                confirm = open_project,
             },
         },
     },
