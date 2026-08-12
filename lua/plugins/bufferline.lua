@@ -1,26 +1,26 @@
 require('bufferline').setup {
-  options = {
-    mode = 'buffers',
-    close_command = function(buffer_number) Snacks.bufdelete(buffer_number) end,
-    right_mouse_command = function(buffer_number) Snacks.bufdelete(buffer_number) end,
-    diagnostics = 'nvim_lsp',
-    diagnostics_indicator = function(_, _, diagnostics)
-      local result = ''
-      if diagnostics.error then result = result .. '  ' .. diagnostics.error end
-      if diagnostics.warning then result = result .. '  ' .. diagnostics.warning end
-      return result
-    end,
-    always_show_bufferline = false,
-    show_buffer_icons = true,
-    show_buffer_close_icons = false,
-    show_close_icon = false,
-    separator_style = 'thin',
-    offsets = {
-      {
-        filetype = 'snacks_layout_box',
-      },
+    options = {
+        mode = 'buffers',
+        close_command = function(buffer_number) Snacks.bufdelete(buffer_number) end,
+        right_mouse_command = function(buffer_number) Snacks.bufdelete(buffer_number) end,
+        diagnostics = 'nvim_lsp',
+        diagnostics_indicator = function(_, _, diagnostics)
+            local result = ''
+            if diagnostics.error then result = result .. '  ' .. diagnostics.error end
+            if diagnostics.warning then result = result .. '  ' .. diagnostics.warning end
+            return result
+        end,
+        always_show_bufferline = false,
+        show_buffer_icons = true,
+        show_buffer_close_icons = false,
+        show_close_icon = false,
+        separator_style = 'thin',
+        offsets = {
+            {
+                filetype = 'snacks_layout_box',
+            },
+        },
     },
-  },
 }
 
 local map = vim.keymap.set

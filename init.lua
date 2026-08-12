@@ -6,21 +6,21 @@ vim.g.maplocalleader = '\\'
 vim.g.have_nerd_font = true
 
 vim.api.nvim_create_autocmd('VimEnter', {
-  once = true,
-  callback = function()
-    if vim.fn.argc() ~= 1 then return end
+    once = true,
+    callback = function()
+        if vim.fn.argc() ~= 1 then return end
 
-    local arg = vim.fn.argv(0)
-    local path = vim.fn.fnamemodify(arg, ':p')
+        local arg = vim.fn.argv(0)
+        local path = vim.fn.fnamemodify(arg, ':p')
 
-    if vim.fn.isdirectory(path) == 1 then
-      vim.api.nvim_set_current_dir(path)
+        if vim.fn.isdirectory(path) == 1 then
+            vim.api.nvim_set_current_dir(path)
 
-      -- Let directory/explorer startup handling finish first, then remove
-      -- the directory argument so it is not written into project sessions.
-      vim.schedule(function() vim.cmd 'silent! %argdelete' end)
-    end
-  end,
+            -- Let directory/explorer startup handling finish first, then remove
+            -- the directory argument so it is not written into project sessions.
+            vim.schedule(function() vim.cmd 'silent! %argdelete' end)
+        end
+    end,
 })
 
 -- experimental

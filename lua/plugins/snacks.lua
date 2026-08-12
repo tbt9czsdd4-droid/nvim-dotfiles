@@ -1,50 +1,50 @@
 local root_markers = {
-  '.git',
-  'Cargo.toml',
-  'pyproject.toml',
-  'CMakeLists.txt',
-  'Makefile',
-  'package.json',
+    '.git',
+    'Cargo.toml',
+    'pyproject.toml',
+    'CMakeLists.txt',
+    'Makefile',
+    'package.json',
 }
 
 local function project_root()
-  local name = vim.api.nvim_buf_get_name(0)
-  local start = name ~= '' and vim.fs.dirname(name) or vim.uv.cwd()
-  return vim.fs.root(start, root_markers) or vim.uv.cwd()
+    local name = vim.api.nvim_buf_get_name(0)
+    local start = name ~= '' and vim.fs.dirname(name) or vim.uv.cwd()
+    return vim.fs.root(start, root_markers) or vim.uv.cwd()
 end
 
 require('snacks').setup {
-  explorer = {
-    enabled = true,
-    replace_netrw = true,
-  },
-  picker = {
-    enabled = true,
-    sources = {
-      projects = {
-        confirm = function(picker, item)
-          require('persistence').save()
-          Snacks.picker.actions.load_session(picker, item)
-        end,
-      },
+    explorer = {
+        enabled = true,
+        replace_netrw = true,
     },
-  },
-  indent = {
-    enabled = true,
-    char = '│',
-  },
-  scope = {
-    enabled = true,
-    char = '|',
-    underline = false,
-  },
-  terminal = {
-    win = {
-      position = 'bottom',
-      border = 'top',
-      height = 0.3,
+    picker = {
+        enabled = true,
+        sources = {
+            projects = {
+                confirm = function(picker, item)
+                    require('persistence').save()
+                    Snacks.picker.actions.load_session(picker, item)
+                end,
+            },
+        },
     },
-  },
+    indent = {
+        enabled = true,
+        char = '│',
+    },
+    scope = {
+        enabled = true,
+        char = '|',
+        underline = false,
+    },
+    terminal = {
+        win = {
+            position = 'bottom',
+            border = 'top',
+            height = 0.3,
+        },
+    },
 }
 
 local map = vim.keymap.set

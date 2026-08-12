@@ -1,15 +1,15 @@
 require('yanky').setup {
-  ring = {
-    history_length = 100,
-  },
-  highlight = {
-    on_put = true,
-    on_yank = true,
-    timer = 300,
-  },
-  preserve_cursor_position = {
-    enabled = true,
-  },
+    ring = {
+        history_length = 100,
+    },
+    highlight = {
+        on_put = true,
+        on_yank = true,
+        timer = 300,
+    },
+    preserve_cursor_position = {
+        enabled = true,
+    },
 }
 
 local map = vim.keymap.set

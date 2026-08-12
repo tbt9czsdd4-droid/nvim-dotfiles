@@ -23,9 +23,9 @@ opt.breakindent = true
 
 opt.list = true
 opt.listchars = {
-  tab = '» ',
-  trail = '·',
-  nbsp = '␣',
+    tab = '» ',
+    trail = '·',
+    nbsp = '␣',
 }
 
 vim.opt.sessionoptions:remove 'blank'

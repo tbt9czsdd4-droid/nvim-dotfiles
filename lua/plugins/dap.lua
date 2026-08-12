@@ -5,31 +5,31 @@ dapui.setup()
 require('nvim-dap-virtual-text').setup {}
 
 require('mason-nvim-dap').setup {
-  ensure_installed = {
-    'codelldb',
-    'python',
-  },
-  automatic_installation = true,
-  handlers = {},
+    ensure_installed = {
+        'codelldb',
+        'python',
+    },
+    automatic_installation = true,
+    handlers = {},
 }
 
 vim.fn.sign_define('DapBreakpoint', {
-  text = '●',
-  texthl = 'DiagnosticError',
-  linehl = '',
-  numhl = '',
+    text = '●',
+    texthl = 'DiagnosticError',
+    linehl = '',
+    numhl = '',
 })
 vim.fn.sign_define('DapBreakpointCondition', {
-  text = '◆',
-  texthl = 'DiagnosticWarn',
-  linehl = '',
-  numhl = '',
+    text = '◆',
+    texthl = 'DiagnosticWarn',
+    linehl = '',
+    numhl = '',
 })
 vim.fn.sign_define('DapStopped', {
-  text = '▶',
-  texthl = 'DiagnosticInfo',
-  linehl = 'Visual',
-  numhl = '',
+    text = '▶',
+    texthl = 'DiagnosticInfo',
+    linehl = 'Visual',
+    numhl = '',
 })
 
 dap.listeners.before.attach.dapui_config = function() dapui.open() end

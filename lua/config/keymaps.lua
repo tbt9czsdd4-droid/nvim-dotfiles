@@ -3,14 +3,14 @@ local map = vim.keymap.set
 map('n', '<Esc>', '<cmd>nohlsearch<cr>', { desc = 'Clear search highlight' })
 
 map({ 'n', 'x' }, 'j', "v:count == 0 ? 'gj' : 'j'", {
-  expr = true,
-  silent = true,
-  desc = 'Down',
+    expr = true,
+    silent = true,
+    desc = 'Down',
 })
 map({ 'n', 'x' }, 'k', "v:count == 0 ? 'gk' : 'k'", {
-  expr = true,
-  silent = true,
-  desc = 'Up',
+    expr = true,
+    silent = true,
+    desc = 'Up',
 })
 
 map('n', '<C-h>', '<C-w>h', { desc = 'Focus left window' })
@@ -38,27 +38,27 @@ map('n', '<leader>cd', vim.diagnostic.open_float, { desc = 'Line diagnostics' })
 map('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
 
 map('t', '<C-h>', [[<C-\><C-n><C-w>h]], {
-  desc = 'Go to left window',
+    desc = 'Go to left window',
 })
 
 map('t', '<C-j>', [[<C-\><C-n><C-w>j]], {
-  desc = 'Go to lower window',
+    desc = 'Go to lower window',
 })
 
 map('t', '<C-k>', [[<C-\><C-n><C-w>k]], {
-  desc = 'Go to upper window',
+    desc = 'Go to upper window',
 })
 
 map('t', '<C-l>', [[<C-\><C-n><C-w>l]], {
-  desc = 'Go to right window',
+    desc = 'Go to right window',
 })
 
 -- Delete without overwriting registers
 map({ 'n', 'x' }, 'd', '"_d', {
-  desc = 'Delete without yanking',
+    desc = 'Delete without yanking',
 })
 
 -- Change without overwriting registers
 map({ 'n', 'x' }, 'c', '"_c', {
-  desc = 'Change without yanking',
+    desc = 'Change without yanking',
 })

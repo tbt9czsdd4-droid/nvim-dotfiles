@@ -8,15 +8,15 @@ map('o', 'r', function() flash.remote() end, { desc = 'Remote Flash' })
 map({ 'o', 'x' }, 'R', function() flash.treesitter_search() end, { desc = 'Treesitter search' })
 map('c', '<C-s>', function() flash.toggle() end, { desc = 'Toggle Flash search' })
 map(
-  { 'n', 'o', 'x' },
-  '<C-Space>',
-  function()
-    flash.treesitter {
-      actions = {
-        ['<C-Space>'] = 'next',
-        ['<BS>'] = 'prev',
-      },
-    }
-  end,
-  { desc = 'Treesitter incremental selection' }
+    { 'n', 'o', 'x' },
+    '<C-Space>',
+    function()
+        flash.treesitter {
+            actions = {
+                ['<C-Space>'] = 'next',
+                ['<BS>'] = 'prev',
+            },
+        }
+    end,
+    { desc = 'Treesitter incremental selection' }
 )
