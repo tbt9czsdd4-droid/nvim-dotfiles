@@ -26,5 +26,3 @@ require('tokyonight').setup {
         end
     end,
 }
-
--- vim.cmd.colorscheme 'tokyonight-night'
