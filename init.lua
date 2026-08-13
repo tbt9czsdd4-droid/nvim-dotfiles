@@ -18,7 +18,21 @@ vim.api.nvim_create_autocmd('VimEnter', {
 
             -- Let directory/explorer startup handling finish first, then remove
             -- the directory argument so it is not written into project sessions.
-            vim.schedule(function() vim.cmd 'silent! %argdelete' end)
+            vim.schedule(function()
+                vim.cmd 'silent! %argdelete'
+
+                local persistence = require 'persistence'
+                local session = persistence.current()
+                local fallback = persistence.current { branch = false }
+
+                if vim.fn.filereadable(session) == 1 or vim.fn.filereadable(fallback) == 1 then
+                    for _, picker in ipairs(Snacks.picker.get { source = 'explorer' }) do
+                        picker:close()
+                    end
+
+                    persistence.load()
+                end
+            end)
         end
     end,
 })
