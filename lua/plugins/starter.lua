@@ -35,7 +35,7 @@ starter.setup {
             section = 'Config',
             action = function()
                 vim.cmd.cd(vim.fn.stdpath 'config')
-                pick.builtin.files()
+                pick.registry.files()
             end,
         },
         {

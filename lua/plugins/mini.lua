@@ -82,7 +82,22 @@ local function has_file_buffers()
     return false
 end
 
-local function pick_files(cwd) pick.builtin.files(nil, { source = { cwd = cwd } }) end
+local function show_files(buf_id, items, query) pick.default_show(buf_id, items, query, { show_icons = true }) end
+
+local function pick_files(cwd)
+    return pick.builtin.cli({
+        command = { 'rg', '--files', '--hidden', '--glob', '!.git', '--color=never' },
+    }, {
+        source = {
+            cwd = cwd,
+            name = 'Files (rg, hidden)',
+            show = show_files,
+        },
+    })
+end
+
+-- Make `:Pick files` use the same hidden-file-aware picker as the keymaps.
+pick.registry.files = function() return pick_files(vim.uv.cwd()) end
 
 local function grep_live(cwd) pick.builtin.grep_live(nil, { source = { cwd = cwd } }) end
 
