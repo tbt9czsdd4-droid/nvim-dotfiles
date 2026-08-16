@@ -1,8 +1,4 @@
-tags
-test.sh
-.luarc.json
-nvim
+.agents
+.codex
+*.log
 
-spell/
-
-.DS_Store
