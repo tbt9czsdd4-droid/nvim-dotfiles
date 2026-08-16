@@ -2,6 +2,7 @@ local servers = {
     'bashls',
     'clangd',
     'lua_ls',
+    'markdown_oxide',
     'pyright',
     'rust_analyzer',
 }
@@ -36,6 +37,18 @@ end
 
 vim.lsp.config('*', {
     capabilities = capabilities,
+})
+
+vim.lsp.config('markdown_oxide', {
+    on_init = function(client)
+        local operations = vim.tbl_get(client.server_capabilities, 'workspace', 'fileOperations')
+
+        for _, capability in pairs(operations or {}) do
+            for _, filter in ipairs(capability.filters or {}) do
+                if filter.scheme == vim.NIL then filter.scheme = nil end
+            end
+        end
+    end,
 })
 
 vim.lsp.config('clangd', {
