@@ -50,4 +50,4 @@ opt.shiftround = true
 -- Use the system clipboard. Scheduled to avoid delaying startup.
 vim.schedule(function() opt.clipboard = 'unnamedplus' end)
 
-vim.g.autoformat = true
+vim.g.autoformat = false
