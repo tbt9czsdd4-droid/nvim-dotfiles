@@ -28,6 +28,7 @@ map('n', '<leader>bd', '<cmd>bdelete<cr>', { desc = 'Delete buffer' })
 
 map({ 'n', 'i', 'x', 's' }, '<C-s>', '<cmd>write<cr><Esc>', { desc = 'Save file' })
 map('n', '<leader>qq', '<cmd>qa<cr>', { desc = 'Quit all' })
+map('n', '<leader>qx', '<cmd>restart<cr>', { desc = 'Restart Neovim' })
 
 map('n', '[d', function() vim.diagnostic.jump { count = -1, float = true } end, { desc = 'Previous diagnostic' })
 
