@@ -2,6 +2,27 @@ local starter = require 'mini.starter'
 local pick = require 'mini.pick'
 local pickers = require('mini.extra').pickers
 
+local function clean_dead_sessions()
+    local persistence = require 'persistence'
+
+    for _, session in ipairs(persistence.list()) do
+        local filename = vim.fn.fnamemodify(session, ':t:r')
+
+        -- Remove optional branch suffix
+        local dir = vim.split(filename, '%%', { plain = true })[1]
+
+        -- Persistence encodes path separators as %
+        dir = dir:gsub('%%', '/')
+
+        if vim.uv.fs_stat(dir) == nil then vim.fn.delete(session) end
+    end
+end
+
+local function select_session()
+    clean_dead_sessions()
+    require('persistence').select()
+end
+
 starter.setup {
     evaluate_single = true,
 
@@ -16,9 +37,9 @@ starter.setup {
 
     items = {
         {
-            name = 'Workspaces',
+            name = 'Sessions',
             section = 'Open',
-            action = function() require('persistence').select() end,
+            action = select_session,
         },
         {
             name = 'Projects',
