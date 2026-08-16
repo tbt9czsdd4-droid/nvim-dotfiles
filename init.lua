@@ -26,10 +26,7 @@ vim.api.nvim_create_autocmd('VimEnter', {
                 local fallback = persistence.current { branch = false }
 
                 if vim.fn.filereadable(session) == 1 or vim.fn.filereadable(fallback) == 1 then
-                    for _, picker in ipairs(Snacks.picker.get { source = 'explorer' }) do
-                        picker:close()
-                    end
-
+                    require('mini.files').close()
                     persistence.load()
                 end
             end)

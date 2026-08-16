@@ -1,4 +1,6 @@
 local starter = require 'mini.starter'
+local pick = require 'mini.pick'
+local pickers = require('mini.extra').pickers
 
 starter.setup {
     evaluate_single = true,
@@ -21,19 +23,19 @@ starter.setup {
         {
             name = 'Projects',
             section = 'Open',
-            action = function() Snacks.picker.projects() end,
+            action = pick.registry.projects,
         },
         {
             name = 'Files',
             section = 'Open',
-            action = function() Snacks.picker.recent() end,
+            action = pickers.oldfiles,
         },
         {
             name = 'Config',
             section = 'Config',
             action = function()
                 vim.cmd.cd(vim.fn.stdpath 'config')
-                Snacks.picker.files()
+                pick.builtin.files()
             end,
         },
         {

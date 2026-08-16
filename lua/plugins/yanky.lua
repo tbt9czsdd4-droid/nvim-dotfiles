@@ -13,7 +13,7 @@ require('yanky').setup {
 }
 
 local map = vim.keymap.set
-map({ 'n', 'x' }, '<leader>p', function() Snacks.picker.yanky() end, { desc = 'Yank history' })
+map({ 'n', 'x' }, '<leader>p', function() require('yanky.picker').select_in_history() end, { desc = 'Yank history' })
 map({ 'n', 'x' }, 'y', '<Plug>(YankyYank)', { desc = 'Yank text' })
 map({ 'n', 'x' }, 'p', '<Plug>(YankyPutAfter)', { desc = 'Put after' })
 map({ 'n', 'x' }, 'P', '<Plug>(YankyPutBefore)', { desc = 'Put before' })

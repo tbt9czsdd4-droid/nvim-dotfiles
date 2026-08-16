@@ -33,6 +33,5 @@ vim.pack.add {
     { src = 'https://github.com/folke/persistence.nvim' },
     { src = 'https://github.com/folke/snacks.nvim' },
     { src = 'https://github.com/folke/tokyonight.nvim' },
-    { src = 'https://github.com/folke/which-key.nvim' },
     { src = 'https://github.com/gbprod/yanky.nvim' },
 }
