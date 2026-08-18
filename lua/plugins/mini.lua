@@ -74,14 +74,6 @@ pick.setup {
 extra.setup()
 visits.setup()
 
-local function has_file_buffers()
-    for _, buffer in ipairs(vim.api.nvim_list_bufs()) do
-        if vim.bo[buffer].buftype == '' and vim.api.nvim_buf_get_name(buffer) ~= '' then return true end
-    end
-
-    return false
-end
-
 local function show_files(buf_id, items, query) pick.default_show(buf_id, items, query, { show_icons = true }) end
 
 local function pick_files(cwd)
@@ -102,22 +94,8 @@ pick.registry.files = function() return pick_files(vim.uv.cwd()) end
 local function grep_live(cwd) pick.builtin.grep_live(nil, { source = { cwd = cwd } }) end
 
 local function open_project(path)
-    local persistence = require 'persistence'
-
-    -- Preserve the project being left, but do not overwrite a session with
-    -- the empty dashboard state.
-    if has_file_buffers() then persistence.save() end
-
-    vim.fn.chdir(path)
-
-    local session = persistence.current()
-    local branchless_session = persistence.current { branch = false }
-
-    if vim.fn.filereadable(session) == 1 or vim.fn.filereadable(branchless_session) == 1 then
-        persistence.load()
-    else
-        pick_files(path)
-    end
+    local result = require('config.sessions').open_directory(path)
+    if result == 'created' then pick_files(path) end
 end
 
 pick.registry.projects = function()

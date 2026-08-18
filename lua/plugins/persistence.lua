@@ -1,8 +1,9 @@
-require('persistence').setup {}
+local sessions = require 'config.sessions'
+sessions.setup()
 
 local map = vim.keymap.set
 
-map('n', '<leader>qs', function() require('persistence').load() end, { desc = 'Restore session' })
-map('n', '<leader>qS', function() require('persistence').select() end, { desc = 'Select session' })
-map('n', '<leader>ql', function() require('persistence').load { last = true } end, { desc = 'Restore last session' })
-map('n', '<leader>qd', function() require('persistence').stop() end, { desc = "Don't save current session" })
+map('n', '<leader>qs', sessions.restore_current, { desc = 'Restore session' })
+map('n', '<leader>qS', sessions.select, { desc = 'Select session' })
+map('n', '<leader>ql', sessions.restore_last, { desc = 'Restore last session' })
+map('n', '<leader>qd', sessions.detach, { desc = "Don't save current session" })
