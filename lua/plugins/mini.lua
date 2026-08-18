@@ -95,7 +95,7 @@ local function grep_live(cwd) pick.builtin.grep_live(nil, { source = { cwd = cwd
 
 local function open_project(path)
     local result = require('config.sessions').open_directory(path)
-    if result == 'created' then pick_files(path) end
+    if result == 'created' or result == 'detached' then pick_files(path) end
 end
 
 pick.registry.projects = function()

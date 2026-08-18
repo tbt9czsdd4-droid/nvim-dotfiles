@@ -19,6 +19,11 @@ end
 
 local function is_within(path, root) return path == root or vim.startswith(path, root == '/' and root or root .. '/') end
 
+local function is_protected(root)
+    root = normalize(root)
+    return root == '/' or root == normalize(vim.env.HOME)
+end
+
 local function with_cwd(path, callback)
     local previous = uv.cwd()
     vim.api.nvim_set_current_dir(path)
@@ -45,10 +50,40 @@ local function session_roots()
 
     for _, session in ipairs(require('persistence').list()) do
         local root = root_from_session(session)
-        if uv.fs_stat(root) then roots[root] = true end
+        if uv.fs_stat(root) and not is_protected(root) then roots[root] = true end
     end
 
     return vim.tbl_keys(roots)
+end
+
+local function session_items()
+    local items = {}
+    local roots = {}
+
+    for _, session in ipairs(require('persistence').list()) do
+        local root = root_from_session(session)
+        local stat = uv.fs_stat(session)
+        local item = roots[root]
+
+        if not item then
+            item = {
+                root = root,
+                mtime = stat and stat.mtime.sec or 0,
+            }
+            roots[root] = item
+            table.insert(items, item)
+        elseif stat then
+            item.mtime = math.max(item.mtime, stat.mtime.sec)
+        end
+    end
+
+    for _, item in ipairs(items) do
+        local suffix = not uv.fs_stat(item.root) and ' [missing]' or is_protected(item.root) and ' [protected]' or ''
+        item.text = vim.fn.fnamemodify(item.root, ':p:~') .. suffix
+    end
+
+    table.sort(items, function(a, b) return a.mtime > b.mtime end)
+    return items
 end
 
 local function containing_session(path)
@@ -128,6 +163,16 @@ local function activate(root)
 end
 
 local function load_root(root)
+    if not uv.fs_stat(root) then
+        vim.notify('Session directory no longer exists: ' .. root, vim.log.levels.WARN)
+        return false
+    end
+
+    if is_protected(root) then
+        vim.notify('Sessions are disabled for ' .. vim.fn.fnamemodify(root, ':p:~'), vim.log.levels.WARN)
+        return false
+    end
+
     local session = session_for_root(root)
     if not session then return false end
 
@@ -149,6 +194,13 @@ function M.open_directory(path, opts)
         return 'loaded'
     end
 
+    if is_protected(path) then
+        if not opts.startup then wipe_buffers() end
+        vim.api.nvim_set_current_dir(path)
+        M.detach()
+        return 'detached'
+    end
+
     if not opts.startup then wipe_buffers() end
     activate(path)
     return 'created'
@@ -162,36 +214,34 @@ function M.restore_current()
 end
 
 function M.select()
-    local items = {}
-
-    for _, root in ipairs(session_roots()) do
-        local session = session_for_root(root)
-        if session then
-            table.insert(items, {
-                root = root,
-                session = session,
-                mtime = assert(uv.fs_stat(session)).mtime.sec,
-            })
-        end
+    local pick = require 'mini.pick'
+    local delete_current = function()
+        local item = pick.get_picker_matches().current
+        if item and M.delete(item.root) then pick.set_picker_items(session_items()) end
     end
 
-    table.sort(items, function(a, b) return a.mtime > b.mtime end)
-    vim.ui.select(items, {
-        prompt = 'Select a session: ',
-        format_item = function(item) return vim.fn.fnamemodify(item.root, ':p:~') end,
-    }, function(item)
-        if not item then return end
-        vim.schedule(function()
-            if save_before_transition() then load_root(item.root) end
-        end)
-    end)
+    pick.start {
+        source = {
+            items = session_items(),
+            name = 'Sessions (<C-d> delete)',
+            choose = function(item)
+                vim.schedule(function()
+                    if save_before_transition() then load_root(item.root) end
+                end)
+            end,
+        },
+        mappings = {
+            delete_session = { char = '<C-d>', func = delete_current },
+        },
+    }
 end
 
 function M.restore_last()
     local session
 
     for _, candidate in ipairs(require('persistence').list()) do
-        if uv.fs_stat(root_from_session(candidate)) then
+        local root = root_from_session(candidate)
+        if uv.fs_stat(root) and not is_protected(root) then
             session = candidate
             break
         end
@@ -211,6 +261,40 @@ end
 function M.detach()
     owner = nil
     require('persistence').stop()
+end
+
+function M.delete(root, opts)
+    opts = opts or {}
+    root = normalize(root)
+
+    if opts.confirm ~= false then
+        local choice = vim.fn.confirm('Delete every saved session for ' .. vim.fn.fnamemodify(root, ':p:~') .. '?', '&Delete\n&Cancel', 2)
+        if choice ~= 1 then return false end
+    end
+
+    local deleted = 0
+    for _, session in ipairs(require('persistence').list()) do
+        if root_from_session(session) == root and vim.fn.delete(session) == 0 then deleted = deleted + 1 end
+    end
+
+    if owner == root then M.detach() end
+
+    if deleted == 0 then
+        vim.notify('No saved session found for ' .. vim.fn.fnamemodify(root, ':p:~'), vim.log.levels.WARN)
+        return false
+    end
+
+    vim.notify(string.format('Deleted %d session file%s for %s', deleted, deleted == 1 and '' or 's', vim.fn.fnamemodify(root, ':p:~')))
+    return true
+end
+
+function M.delete_current(opts)
+    if not owner then
+        vim.notify('There is no active session to delete', vim.log.levels.WARN)
+        return false
+    end
+
+    return M.delete(owner, opts)
 end
 
 function M.open_file_detached(path)
