@@ -119,7 +119,7 @@ vim.api.nvim_create_autocmd('LspAttach', {
         end
 
         map('gd', function() pick_lsp_locations 'definition' end, 'Goto definition')
-        map('gr', function() pick_lsp_locations 'references' end, 'References')
+        map('grr', function() pick_lsp_locations 'references' end, 'References')
         map('gI', function() pick_lsp_locations 'implementation' end, 'Goto implementation')
         map('gy', function() pick_lsp_locations 'type_definition' end, 'Goto type definition')
         map('gD', vim.lsp.buf.declaration, 'Goto declaration')
