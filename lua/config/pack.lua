@@ -11,6 +11,7 @@ vim.api.nvim_create_autocmd('PackChanged', {
 })
 
 vim.pack.add {
+    { src = 'https://github.com/stevearc/aerial.nvim' },
     { src = 'https://github.com/saghen/blink.cmp', version = vim.version.range '1.*' },
     { src = 'https://github.com/akinsho/bufferline.nvim' },
     { src = 'https://github.com/stevearc/conform.nvim' },

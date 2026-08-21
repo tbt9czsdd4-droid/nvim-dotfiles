@@ -200,7 +200,6 @@ map('n', '<leader><space>', function() pick_files(project_root()) end, { desc = 
 map('n', '<leader>/', function() grep_live(project_root()) end, { desc = 'Grep project' })
 map('n', '<leader>,', pick.builtin.buffers, { desc = 'Buffers' })
 map('n', '<leader>:', function() extra.pickers.history { scope = ':' } end, { desc = 'Command history' })
-map('n', '<leader>o', extra.pickers.treesitter, { desc = 'Code outline' })
 map('n', '<leader>ff', function() pick_files(project_root()) end, { desc = 'Find files (project)' })
 map('n', '<leader>fF', function() pick_files(vim.uv.cwd()) end, { desc = 'Find files (cwd)' })
 map('n', '<leader>fg', extra.pickers.git_files, { desc = 'Find Git files' })
