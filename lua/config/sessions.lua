@@ -317,6 +317,14 @@ function M.recent_files(local_opts)
     })
 end
 
+function M.reset_to_starter()
+    close_explorer()
+    vim.cmd 'silent! %argdelete'
+    M.detach()
+    wipe_buffers()
+    require('mini.starter').open(vim.api.nvim_get_current_buf())
+end
+
 function M.owner() return owner end
 
 function M.setup()
