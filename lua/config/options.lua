@@ -17,10 +17,6 @@ opt.timeoutlen = 300
 opt.splitright = true
 opt.splitbelow = true
 
-opt.showmode = false
-opt.cmdheight = 0
-opt.breakindent = true
-
 opt.list = true
 opt.listchars = {
     tab = '» ',

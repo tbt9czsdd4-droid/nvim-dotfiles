@@ -24,7 +24,6 @@ vim.pack.add {
     { src = 'https://github.com/WhoIsSethDaniel/mason-tool-installer.nvim' },
     { src = 'https://github.com/mason-org/mason.nvim' },
     { src = 'https://github.com/nvim-mini/mini.nvim' },
-    { src = 'https://github.com/nvim-mini/mini.starter' },
     { src = 'https://github.com/mfussenegger/nvim-dap' },
     { src = 'https://github.com/rcarriga/nvim-dap-ui' },
     { src = 'https://github.com/theHamsta/nvim-dap-virtual-text' },

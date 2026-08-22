@@ -18,8 +18,7 @@ map('n', '<C-j>', '<C-w>j', { desc = 'Focus lower window' })
 map('n', '<C-k>', '<C-w>k', { desc = 'Focus upper window' })
 map('n', '<C-l>', '<C-w>l', { desc = 'Focus right window' })
 
-map('n', '<C-h>', '<C-w>h', { desc = 'Focus left window' })
-map('n', '<C-Down>', '<cmd>resize -2<cr>', { desc = 'jrhejrhejk' })
+map('n', '<C-Down>', '<cmd>resize -2<cr>', { desc = 'Decrease window height' })
 map('n', '<C-Left>', '<cmd>vertical resize -2<cr>', { desc = 'Decrease window width' })
 map('n', '<C-Right>', '<cmd>vertical resize +2<cr>', { desc = 'Increase window width' })
 
