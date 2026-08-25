@@ -318,11 +318,16 @@ function M.recent_files(local_opts)
 end
 
 function M.reset_to_starter()
+    if not save_before_transition() then return false end
+
     close_explorer()
     vim.cmd 'silent! %argdelete'
     M.detach()
+    vim.cmd 'silent! tabonly'
+    vim.cmd 'silent! only'
     wipe_buffers()
     require('mini.starter').open(vim.api.nvim_get_current_buf())
+    return true
 end
 
 function M.owner() return owner end

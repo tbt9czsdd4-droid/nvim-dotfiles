@@ -78,8 +78,6 @@ end
 -- Make `:Pick files` use the same hidden-file-aware picker as the keymaps.
 pick.registry.files = function() return pick_files(vim.uv.cwd()) end
 
-local function grep_live(cwd) pick.builtin.grep_live(nil, { source = { cwd = cwd } }) end
-
 local function open_project(path)
     local result = require('config.sessions').open_directory(path)
     if result == 'created' or result == 'detached' then pick_files(path) end
@@ -183,21 +181,14 @@ end
 
 local map = vim.keymap.set
 
-map('n', '<leader><space>', function() pick_files(project_root()) end, { desc = 'Find files (project)' })
-map('n', '<leader>/', function() grep_live(project_root()) end, { desc = 'Grep project' })
 map('n', '<leader>,', pick.builtin.buffers, { desc = 'Buffers' })
 map('n', '<leader>:', function() extra.pickers.history { scope = ':' } end, { desc = 'Command history' })
-map('n', '<leader>ff', function() pick_files(project_root()) end, { desc = 'Find files (project)' })
-map('n', '<leader>fF', function() pick_files(vim.uv.cwd()) end, { desc = 'Find files (cwd)' })
 map('n', '<leader>fg', extra.pickers.git_files, { desc = 'Find Git files' })
 map('n', '<leader>fr', function() extra.pickers.oldfiles { current_dir = true } end, { desc = 'Recent files (cwd)' })
 map('n', '<leader>fR', extra.pickers.oldfiles, { desc = 'Recent files' })
 map('n', '<leader>fp', pick.registry.projects, { desc = 'Projects' })
-map('n', '<leader>fc', function() pick_files(vim.fn.stdpath 'config') end, { desc = 'Find config file' })
 map('n', '<leader>sb', function() extra.pickers.buf_lines { scope = 'current' } end, { desc = 'Buffer lines' })
 map('n', '<leader>sB', function() extra.pickers.buf_lines { scope = 'all' } end, { desc = 'Grep open buffers' })
-map('n', '<leader>sg', function() grep_live(project_root()) end, { desc = 'Grep project' })
-map('n', '<leader>sG', function() grep_live(vim.uv.cwd()) end, { desc = 'Grep cwd' })
 map({ 'n', 'x' }, '<leader>sw', grep_selection, { desc = 'Search word/selection' })
 map('n', '<leader>s"', extra.pickers.registers, { desc = 'Registers' })
 map('n', '<leader>sa', pick.registry.autocommands, { desc = 'Autocommands' })
