@@ -219,7 +219,6 @@ clue.setup {
         { mode = { 'n', 'x' }, keys = '<Leader>q', desc = '+quit/session' },
         { mode = { 'n', 'x' }, keys = '<Leader>s', desc = '+search' },
         { mode = { 'n', 'x' }, keys = '<Leader>u', desc = '+ui/toggles' },
-        { mode = { 'n', 'x' }, keys = '<Leader>x', desc = '+diagnostics/quickfix' },
         clue.gen_clues.square_brackets(),
         clue.gen_clues.g(),
         clue.gen_clues.z(),
