@@ -8,32 +8,7 @@ local servers = {
 }
 
 local capabilities = require('blink.cmp').get_lsp_capabilities()
-local pick = require 'mini.pick'
 local pickers = require('mini.extra').pickers
-
-local function pick_lsp_locations(scope)
-    local on_list = function(data)
-        for _, item in ipairs(data.items) do
-            item.path = item.filename or vim.api.nvim_buf_get_name(item.bufnr or 0)
-            item.text = string.format('%s:%d:%d %s', vim.fn.fnamemodify(item.path, ':.'), item.lnum or 1, item.col or 1, item.text or '')
-        end
-
-        if #data.items == 1 then return pick.default_choose(data.items[1]) end
-
-        pick.start {
-            source = {
-                items = data.items,
-                name = data.title or ('LSP (' .. scope .. ')'),
-            },
-        }
-    end
-
-    if scope == 'references' then
-        vim.lsp.buf.references(nil, { on_list = on_list })
-    else
-        vim.lsp.buf[scope] { on_list = on_list }
-    end
-end
 
 vim.lsp.config('*', {
     capabilities = capabilities,
@@ -118,10 +93,10 @@ vim.api.nvim_create_autocmd('LspAttach', {
             })
         end
 
-        map('gd', function() pick_lsp_locations 'definition' end, 'Goto definition')
-        map('grr', function() pick_lsp_locations 'references' end, 'References')
-        map('gI', function() pick_lsp_locations 'implementation' end, 'Goto implementation')
-        map('gy', function() pick_lsp_locations 'type_definition' end, 'Goto type definition')
+        map('gd', function() Snacks.picker.lsp_definitions() end, 'Goto definition')
+        map('grr', function() Snacks.picker.lsp_references() end, 'References')
+        map('gI', function() Snacks.picker.lsp_implementations() end, 'Goto implementation')
+        map('gy', function() Snacks.picker.lsp_type_definitions() end, 'Goto type definition')
         map('gD', vim.lsp.buf.declaration, 'Goto declaration')
         map('K', vim.lsp.buf.hover, 'Hover documentation')
         map('<leader>ca', vim.lsp.buf.code_action, 'Code action', { 'n', 'x' })
