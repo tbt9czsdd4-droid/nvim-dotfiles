@@ -14,16 +14,12 @@ require('snacks').setup {
     },
     indent = {
         enabled = true,
-        indent = {
-            char = '│',
-        },
-        scope = {
-            char = '|',
-            underline = false,
-        },
+        char = '│',
     },
     scope = {
         enabled = true,
+        char = '|',
+        underline = false,
     },
     terminal = {
         win = {
