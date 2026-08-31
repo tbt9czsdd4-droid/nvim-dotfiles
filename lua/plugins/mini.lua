@@ -17,6 +17,7 @@ local project_root = require('config.project').root
 require('mini.files').setup {
     options = {
         use_as_default_explorer = true,
+        lsp_timeout = 0,
     },
     windows = {
         preview = true,
