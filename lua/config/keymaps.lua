@@ -53,6 +53,10 @@ map('t', '<C-l>', [[<C-\><C-n><C-w>l]], {
     desc = 'Go to right window',
 })
 
+map('i', '<C-c>', '<Esc>', {
+    desc = 'Leave insert mode',
+})
+
 -- Delete without overwriting registers
 map({ 'n', 'x' }, 'd', '"_d', {
     desc = 'Delete without yanking',
