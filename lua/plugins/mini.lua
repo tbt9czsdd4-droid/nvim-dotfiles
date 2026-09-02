@@ -243,6 +243,8 @@ require('mini.move').setup {
 }
 
 local animate = require 'mini.animate'
+local max_animated_scroll = 1000
+
 animate.setup {
     cursor = {
         enable = true,
@@ -251,6 +253,11 @@ animate.setup {
     scroll = {
         enable = true,
         timing = animate.gen_timing.linear { duration = 100, unit = 'total' },
+        -- Large jumps require many expensive redraws and can leave `gg`/`G`
+        -- partway through the file when the animation is interrupted.
+        subscroll = animate.gen_subscroll.equal {
+            predicate = function(total_scroll) return total_scroll > 1 and total_scroll <= max_animated_scroll end,
+        },
     },
     -- Keep this disabled. It previously triggered the WezTerm resize/statusline bug.
     resize = {

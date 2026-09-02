@@ -43,6 +43,9 @@ opt.shiftwidth = 4
 opt.softtabstop = 4
 opt.shiftround = true
 
+-- Forward remote yanks to the host terminal's clipboard.
+if vim.env.SSH_CONNECTION ~= nil then vim.g.clipboard = 'osc52' end
+
 -- Use the system clipboard. Scheduled to avoid delaying startup.
 vim.schedule(function() opt.clipboard = 'unnamedplus' end)
 
