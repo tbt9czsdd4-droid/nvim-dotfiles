@@ -79,6 +79,8 @@ local function session_items()
 
     for _, item in ipairs(items) do
         local suffix = not uv.fs_stat(item.root) and ' [missing]' or is_protected(item.root) and ' [protected]' or ''
+        item.file = item.root
+        item.dir = true
         item.text = vim.fn.fnamemodify(item.root, ':p:~') .. suffix
     end
 
@@ -214,24 +216,34 @@ function M.restore_current()
 end
 
 function M.select()
-    local pick = require 'mini.pick'
-    local delete_current = function()
-        local item = pick.get_picker_matches().current
-        if item and M.delete(item.root) then pick.set_picker_items(session_items()) end
-    end
-
-    pick.start {
-        source = {
-            items = session_items(),
-            name = 'Sessions (<C-d> delete)',
-            choose = function(item)
-                vim.schedule(function()
-                    if save_before_transition() then load_root(item.root) end
-                end)
+    Snacks.picker.pick {
+        title = 'Sessions (<C-d> delete)',
+        finder = function() return session_items() end,
+        format = 'text',
+        show_empty = true,
+        confirm = function(picker, item)
+            picker:close()
+            if not item then return end
+            vim.schedule(function()
+                if save_before_transition() then load_root(item.root) end
+            end)
+        end,
+        actions = {
+            delete_session = function(picker, item)
+                if item and M.delete(item.root) then picker:refresh() end
             end,
         },
-        mappings = {
-            delete_session = { char = '<C-d>', func = delete_current },
+        win = {
+            input = {
+                keys = {
+                    ['<C-d>'] = { 'delete_session', mode = { 'n', 'i' } },
+                },
+            },
+            list = {
+                keys = {
+                    ['<C-d>'] = 'delete_session',
+                },
+            },
         },
     }
 end
@@ -307,14 +319,17 @@ function M.open_file_detached(path)
 end
 
 function M.recent_files(local_opts)
-    require('mini.extra').pickers.oldfiles(local_opts, {
-        source = {
-            choose = function(item)
-                local path = vim.fn.fnamemodify(item, ':p')
-                vim.schedule(function() M.open_file_detached(path) end)
-            end,
-        },
-    })
+    local_opts = local_opts or {}
+
+    Snacks.picker.recent {
+        filter = local_opts.current_dir and { cwd = true, paths = false } or false,
+        show_empty = true,
+        confirm = function(picker, item)
+            picker:close()
+            if not item then return end
+            vim.schedule(function() M.open_file_detached(item.file) end)
+        end,
+    }
 end
 
 function M.reset_to_starter()

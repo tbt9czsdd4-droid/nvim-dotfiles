@@ -8,7 +8,6 @@ local servers = {
 }
 
 local capabilities = require('blink.cmp').get_lsp_capabilities()
-local pickers = require('mini.extra').pickers
 
 vim.lsp.config('*', {
     capabilities = capabilities,
@@ -101,8 +100,8 @@ vim.api.nvim_create_autocmd('LspAttach', {
         map('K', vim.lsp.buf.hover, 'Hover documentation')
         map('<leader>ca', vim.lsp.buf.code_action, 'Code action', { 'n', 'x' })
         map('<leader>cr', vim.lsp.buf.rename, 'Rename')
-        map('<leader>ss', function() pickers.lsp { scope = 'document_symbol' } end, 'Document symbols')
-        map('<leader>sS', function() pickers.lsp { scope = 'workspace_symbol_live' } end, 'Workspace symbols')
+        map('<leader>ss', function() Snacks.picker.lsp_symbols() end, 'Document symbols')
+        map('<leader>sS', function() Snacks.picker.lsp_workspace_symbols() end, 'Workspace symbols')
 
         local client = vim.lsp.get_client_by_id(event.data.client_id)
         if client and client:supports_method(vim.lsp.protocol.Methods.textDocument_inlayHint, event.buf) then

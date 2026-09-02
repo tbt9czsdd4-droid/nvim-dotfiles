@@ -1,5 +1,4 @@
 local starter = require 'mini.starter'
-local pick = require 'mini.pick'
 local sessions = require 'config.sessions'
 
 starter.setup {
@@ -29,8 +28,9 @@ starter.setup {
             name = 'Config',
             section = 'Config',
             action = function()
-                vim.cmd.cd(vim.fn.stdpath 'config')
-                pick.registry.files()
+                local config = vim.fn.stdpath 'config'
+                vim.cmd.cd(config)
+                Snacks.picker.files { cwd = config }
             end,
         },
         {
