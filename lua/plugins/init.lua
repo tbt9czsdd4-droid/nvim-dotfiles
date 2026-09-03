@@ -1,4 +1,3 @@
-require 'plugins.tokyonight'
 require 'plugins.cyberdream'
 
 -- load colorscheme
@@ -13,10 +12,8 @@ require 'plugins.mason-tool-installer'
 require 'plugins.lsp'
 require 'plugins.conform'
 require 'plugins.treesitter'
-require 'plugins.aerial'
 require 'plugins.flash'
 require 'plugins.yanky'
-require 'plugins.dap'
 require 'plugins.bufferline'
 require 'plugins.lualine'
 require 'plugins.starter'

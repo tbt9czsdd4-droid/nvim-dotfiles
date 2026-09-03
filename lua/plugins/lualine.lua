@@ -1,3 +1,14 @@
+local function diff_source()
+    local summary = vim.b.minidiff_summary
+    if not summary or not summary.add then return end
+
+    return {
+        added = summary.add,
+        modified = summary.change,
+        removed = summary.delete,
+    }
+end
+
 require('lualine').setup {
     options = {
         theme = 'auto',
@@ -7,7 +18,7 @@ require('lualine').setup {
     },
     sections = {
         lualine_a = { 'mode' },
-        lualine_b = { 'branch', 'diff', 'diagnostics' },
+        lualine_b = { 'branch', { 'diff', source = diff_source }, 'diagnostics' },
         lualine_c = {
             {
                 'filename',

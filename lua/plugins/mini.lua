@@ -35,6 +35,19 @@ end, { desc = 'Open mini.files' })
 
 require('mini.visits').setup()
 
+local diff = require 'mini.diff'
+diff.setup {
+    view = {
+        style = 'sign',
+    },
+    mappings = {
+        apply = '',
+        reset = '',
+    },
+}
+
+vim.keymap.set('n', '<leader>ud', function() diff.toggle_overlay() end, { desc = 'Toggle diff overlay' })
+
 local clue = require 'mini.clue'
 clue.setup {
     triggers = {
@@ -47,7 +60,6 @@ clue.setup {
     clues = {
         { mode = { 'n', 'x' }, keys = '<Leader>b', desc = '+buffer' },
         { mode = { 'n', 'x' }, keys = '<Leader>c', desc = '+code' },
-        { mode = { 'n', 'x' }, keys = '<Leader>d', desc = '+debug' },
         { mode = { 'n', 'x' }, keys = '<Leader>f', desc = '+file/find' },
         { mode = { 'n', 'x' }, keys = '<Leader>q', desc = '+quit/session' },
         { mode = { 'n', 'x' }, keys = '<Leader>s', desc = '+search' },
@@ -73,6 +85,11 @@ require('mini.move').setup {
         line_up = '<M-k>',
     },
 }
+
+-- Avoid extra redraw traffic over SSH. Snacks also disables animations
+-- buffer-locally whenever its big-file mode is active.
+local is_ssh = vim.env.SSH_CONNECTION ~= nil or vim.env.SSH_TTY ~= nil
+if is_ssh then return end
 
 local animate = require 'mini.animate'
 local max_animated_scroll = 1000

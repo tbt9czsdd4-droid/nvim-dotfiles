@@ -1,6 +1,10 @@
 local project_root = require('config.project').root
 
 require('snacks').setup {
+    bigfile = {
+        enabled = true,
+        size = 5 * 1024 * 1024,
+    },
     explorer = {
         enabled = true,
         replace_netrw = false,
@@ -29,6 +33,17 @@ require('snacks').setup {
         },
     },
 }
+
+vim.api.nvim_create_autocmd('FileType', {
+    group = vim.api.nvim_create_augroup('bigfile-integrations', { clear = true }),
+    pattern = 'bigfile',
+    callback = function(event)
+        vim.b[event.buf].minidiff_disable = true
+        vim.b[event.buf].snacks_indent = false
+        vim.b[event.buf].snacks_scope = false
+    end,
+    desc = 'Disable remaining expensive integrations for big files',
+})
 
 local map = vim.keymap.set
 
