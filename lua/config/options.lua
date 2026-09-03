@@ -43,12 +43,28 @@ opt.shiftwidth = 4
 opt.softtabstop = 4
 opt.shiftround = true
 
--- Use the system clipboard only in a local session.  Over SSH, OSC52 cannot
--- read the terminal clipboard without querying it, which makes normal `p`
--- wait for a response.  Leaving `clipboard` unset remotely keeps yanks and
--- pastes in Neovim's internal registers instead.
+-- Over SSH, send yanks to the client's clipboard with OSC 52, but do not try
+-- to read it back: many terminals either forbid clipboard reads or never
+-- answer, which makes `p` wait for an OSC 52 response.  Terminal paste
+-- (usually Ctrl-Shift-V) still works normally.
 local is_ssh = vim.env.SSH_CONNECTION ~= nil or vim.env.SSH_TTY ~= nil
-if not is_ssh then
+if is_ssh then
+    local osc52 = require 'vim.ui.clipboard.osc52'
+    local paste_disabled = function() return {} end
+
+    vim.g.clipboard = {
+        name = 'OSC 52',
+        copy = {
+            ['+'] = osc52.copy '+',
+            ['*'] = osc52.copy '*',
+        },
+        paste = {
+            ['+'] = paste_disabled,
+            ['*'] = paste_disabled,
+        },
+    }
+    opt.clipboard = 'unnamedplus'
+else
     -- Scheduled to avoid delaying startup while the clipboard provider loads.
     vim.schedule(function() opt.clipboard = 'unnamedplus' end)
 end
