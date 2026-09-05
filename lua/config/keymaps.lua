@@ -57,6 +57,10 @@ map('i', '<C-c>', '<Esc>', {
     desc = 'Leave insert mode',
 })
 
+map('n', '<C-z>', '<Nop>', {
+    desc = 'Disable suspend',
+})
+
 -- Delete without overwriting registers
 map({ 'n', 'x' }, 'd', '"_d', {
     desc = 'Delete without yanking',
