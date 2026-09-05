@@ -23,6 +23,7 @@ vim.pack.add {
     { src = 'https://github.com/mason-org/mason.nvim' },
     { src = 'https://github.com/nvim-mini/mini.nvim' },
     { src = 'https://github.com/neovim/nvim-lspconfig' },
+    { src = 'https://github.com/abecodes/tabout.nvim' },
     { src = 'https://github.com/nvim-treesitter/nvim-treesitter', version = 'main' },
     { src = 'https://github.com/folke/persistence.nvim' },
     { src = 'https://github.com/folke/snacks.nvim' },

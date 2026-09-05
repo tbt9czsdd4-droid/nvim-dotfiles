@@ -24,6 +24,7 @@ conform.setup {
     formatters_by_ft = {
         bash = { 'shfmt' },
         c = { 'clang_format' },
+        vhdl = { 'vsg' },
         cpp = { 'clang_format' },
         lua = { 'stylua' },
         python = { 'ruff_format' },
