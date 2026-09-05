@@ -28,6 +28,7 @@ map('n', '<leader>bd', '<cmd>bdelete<cr>', { desc = 'Delete buffer' })
 map({ 'n', 'i', 'x', 's' }, '<C-s>', '<cmd>write<cr><Esc>', { desc = 'Save file' })
 map('n', '<leader>qq', '<cmd>qa<cr>', { desc = 'Quit all' })
 map('n', '<leader>qx', function() require('config.sessions').reset_to_starter() end, { desc = 'Close everything and open dashboard' })
+map('n', '<leader>qX', function() require('config.sessions').restart_to_starter() end, { desc = 'Reload Neovim and open dashboard' })
 
 map('n', '[d', function() vim.diagnostic.jump { count = -1, float = true } end, { desc = 'Previous diagnostic' })
 

@@ -345,6 +345,13 @@ function M.reset_to_starter()
     return true
 end
 
+function M.restart_to_starter()
+    if not M.reset_to_starter() then return false end
+
+    vim.cmd 'restart!'
+    return true
+end
+
 function M.owner() return owner end
 
 function M.setup()
