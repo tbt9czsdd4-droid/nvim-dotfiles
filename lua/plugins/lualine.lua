@@ -88,6 +88,11 @@ local presets = {
 local lualine = require 'lualine'
 local current = 'auto'
 
+local function workspace_name()
+    local owner = require('config.sessions').owner()
+    return owner and vim.fs.basename(owner) or 'Standalone'
+end
+
 local function apply_preset(name)
     for _, preset in ipairs(presets) do
         if preset.name == name then
@@ -100,6 +105,7 @@ local function apply_preset(name)
             for section, components in pairs(preset.sections or {}) do
                 config.sections[section] = vim.deepcopy(components)
             end
+            table.insert(config.sections.lualine_c, 1, workspace_name)
             lualine.setup(config)
             current = name
             return

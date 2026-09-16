@@ -23,7 +23,7 @@ map('n', '<C-Left>', '<cmd>vertical resize -2<cr>', { desc = 'Decrease window wi
 map('n', '<C-Right>', '<cmd>vertical resize +2<cr>', { desc = 'Increase window width' })
 
 map('n', '<leader>bb', '<cmd>buffer #<cr>', { desc = 'Other buffer' })
-map('n', '<leader>bd', '<cmd>bdelete<cr>', { desc = 'Delete buffer' })
+map('n', '<leader>bd', function() Snacks.bufdelete() end, { desc = 'Delete buffer' })
 
 map({ 'n', 'i', 'x', 's' }, '<C-s>', '<cmd>write<cr><Esc>', { desc = 'Save file' })
 map('n', '<leader>qq', '<cmd>qa<cr>', { desc = 'Quit all' })

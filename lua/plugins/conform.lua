@@ -1,5 +1,11 @@
 local conform = require 'conform'
 
+local function autoformat_enabled(bufnr)
+    local override = vim.b[bufnr].autoformat
+    if override ~= nil then return override end
+    return vim.g.autoformat == true
+end
+
 local function format()
     conform.format {
         async = true,
@@ -15,7 +21,7 @@ conform.setup {
         lsp_format = 'fallback',
     },
     format_on_save = function(bufnr)
-        if vim.g.autoformat == false or vim.b[bufnr].autoformat == false then return end
+        if not autoformat_enabled(bufnr) then return end
         return {
             timeout_ms = 500,
             lsp_format = 'fallback',
@@ -45,10 +51,6 @@ map('n', '<leader>uf', function()
     notify_autoformat('Global', vim.g.autoformat)
 end, { desc = 'Toggle global autoformat' })
 map('n', '<leader>uF', function()
-    if vim.b.autoformat == nil then
-        vim.b.autoformat = false
-    else
-        vim.b.autoformat = not vim.b.autoformat
-    end
+    vim.b.autoformat = not autoformat_enabled(0)
     notify_autoformat('Buffer', vim.b.autoformat)
 end, { desc = 'Toggle buffer autoformat' })

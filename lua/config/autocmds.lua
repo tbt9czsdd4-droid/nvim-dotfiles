@@ -1,16 +1,6 @@
 local autocmd = vim.api.nvim_create_autocmd
 local augroup = vim.api.nvim_create_augroup
 
-local function wipe_directory_buffers()
-    for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-        if vim.api.nvim_buf_is_valid(buf) then
-            local name = vim.api.nvim_buf_get_name(buf)
-
-            if name ~= '' and vim.fn.isdirectory(name) == 1 then pcall(vim.api.nvim_buf_delete, buf, { force = true }) end
-        end
-    end
-end
-
 local function set_line_number_highlight()
     vim.api.nvim_set_hl(0, 'CursorLineNr', {
         fg = '#ff9e64',
@@ -18,12 +8,6 @@ local function set_line_number_highlight()
         bold = true,
     })
 end
-
-vim.api.nvim_create_autocmd('User', {
-    pattern = 'PersistenceSavePre',
-    callback = wipe_directory_buffers,
-    desc = 'Exclude directory buffers from sessions',
-})
 
 autocmd({ 'FocusGained', 'TermClose', 'TermLeave' }, {
     group = augroup('kickstart-checktime', { clear = true }),

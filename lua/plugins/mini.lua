@@ -33,8 +33,6 @@ vim.keymap.set('n', '<leader>e', function()
     MiniFiles.open(path, false)
 end, { desc = 'Open mini.files' })
 
-require('mini.visits').setup()
-
 local diff = require 'mini.diff'
 diff.setup {
     view = {

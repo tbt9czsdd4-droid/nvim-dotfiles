@@ -1,10 +1,22 @@
 local servers = {
+    'angularls',
     'bashls',
     'clangd',
+    'docker_compose_language_service',
+    'dockerls',
+    'jsonls',
     'lua_ls',
     'markdown_oxide',
+    'neocmake',
     'pyright',
+    'ruff',
     'rust_analyzer',
+    'stylua',
+    'taplo',
+    'texlab',
+    'tinymist',
+    'vtsls',
+    'yamlls',
 }
 
 local capabilities = require('blink.cmp').get_lsp_capabilities()
@@ -115,5 +127,5 @@ vim.api.nvim_create_autocmd('LspAttach', {
 
 require('mason-lspconfig').setup {
     ensure_installed = servers,
-    automatic_enable = true,
+    automatic_enable = servers,
 }

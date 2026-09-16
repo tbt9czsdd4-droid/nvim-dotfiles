@@ -19,11 +19,11 @@ require('snacks').setup {
     indent = {
         enabled = true,
         char = '│',
-    },
-    scope = {
-        enabled = true,
-        char = '|',
-        underline = false,
+        scope = {
+            enabled = true,
+            char = '|',
+            underline = false,
+        },
     },
     terminal = {
         win = {
@@ -49,49 +49,6 @@ local map = vim.keymap.set
 
 local function pick_files(cwd) Snacks.picker.files { cwd = cwd } end
 local function grep(cwd) Snacks.picker.grep { cwd = cwd } end
-
-local function open_project(path)
-    local result = require('config.sessions').open_directory(path)
-    if result == 'created' or result == 'detached' then pick_files(path) end
-end
-
-local function projects()
-    local visits = require 'mini.visits'
-    local items = {}
-
-    for cwd, paths in pairs(visits.get_index()) do
-        local count, latest = 0, 0
-
-        for _, data in pairs(paths) do
-            count = count + data.count
-            latest = math.max(latest, data.latest)
-        end
-
-        if vim.fn.isdirectory(cwd) == 1 then
-            table.insert(items, {
-                path = cwd,
-                file = cwd,
-                dir = true,
-                text = vim.fn.fnamemodify(cwd, ':p:~'),
-                count = count,
-                latest = latest,
-            })
-        end
-    end
-
-    items = visits.gen_sort.default()(items)
-    Snacks.picker.pick {
-        title = 'Projects',
-        items = items,
-        format = 'text',
-        show_empty = true,
-        confirm = function(picker, item)
-            picker:close()
-            if not item then return end
-            vim.schedule(function() open_project(item.path) end)
-        end,
-    }
-end
 
 local function selection_or_word()
     local mode = vim.fn.mode()
@@ -140,7 +97,7 @@ local function buffer_lines()
     }
 end
 
-map('n', '<leader><space>', function() pick_files(project_root()) end, { desc = 'Find files (project)' })
+map('n', '<leader><space>', function() Snacks.picker.smart { cwd = project_root(), filter = { cwd = true } } end, { desc = 'Smart search (workspace)' })
 map('n', '<leader>/', function() grep(project_root()) end, { desc = 'Grep project' })
 map('n', '<leader>,', function() Snacks.picker.buffers() end, { desc = 'Buffers' })
 map('n', '<leader>:', function() Snacks.picker.command_history() end, { desc = 'Command history' })
@@ -148,9 +105,15 @@ map('n', '<leader>ff', function() pick_files(project_root()) end, { desc = 'Find
 map('n', '<leader>fF', function() pick_files(vim.uv.cwd()) end, { desc = 'Find files (cwd)' })
 map('n', '<leader>fc', function() pick_files(vim.fn.stdpath 'config') end, { desc = 'Find config file' })
 map('n', '<leader>fg', function() Snacks.picker.git_files() end, { desc = 'Find Git files' })
-map('n', '<leader>fr', function() Snacks.picker.recent { filter = { cwd = true, paths = false } } end, { desc = 'Recent files (cwd)' })
+map(
+    'n',
+    '<leader>fr',
+    function() Snacks.picker.recent { cwd = project_root(), filter = { cwd = true, paths = false } } end,
+    { desc = 'Recent files (workspace)' }
+)
 map('n', '<leader>fR', function() Snacks.picker.recent { filter = false } end, { desc = 'Recent files' })
-map('n', '<leader>fp', projects, { desc = 'Projects' })
+map('n', '<leader>fp', function() require('config.sessions').select() end, { desc = 'All folders' })
+map('n', '<leader>sR', function() Snacks.picker.resume() end, { desc = 'Resume picker' })
 map('n', '<leader>sg', function() grep(project_root()) end, { desc = 'Grep project' })
 map('n', '<leader>sG', function() grep(vim.uv.cwd()) end, { desc = 'Grep cwd' })
 map('n', '<leader>sb', function() Snacks.picker.lines() end, { desc = 'Buffer lines' })

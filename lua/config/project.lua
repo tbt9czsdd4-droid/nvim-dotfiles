@@ -1,18 +1,14 @@
 local M = {}
 
-local root_markers = {
-    '.git',
-    'Cargo.toml',
-    'pyproject.toml',
-    'CMakeLists.txt',
-    'Makefile',
-    'package.json',
-}
-
 function M.root()
+    local owner = require('config.sessions').owner()
+    if owner then return owner end
     local name = vim.api.nvim_buf_get_name(0)
-    local start = name ~= '' and vim.fs.dirname(name) or vim.uv.cwd()
-    return vim.fs.root(start, root_markers) or vim.uv.cwd()
+    if vim.bo.buftype == '' and name ~= '' then
+        local path = vim.uv.fs_realpath(name) or name
+        return vim.fn.isdirectory(path) == 1 and path or vim.fs.dirname(path)
+    end
+    return vim.fn.getcwd()
 end
 
 return M
