@@ -19,11 +19,11 @@ require('snacks').setup {
     indent = {
         enabled = true,
         char = '│',
-        scope = {
-            enabled = true,
-            char = '|',
-            underline = false,
-        },
+    },
+    scope = {
+        enabled = true,
+        char = '|',
+        underline = false,
     },
     terminal = {
         win = {
