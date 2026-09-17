@@ -15,20 +15,8 @@ starter.setup {
 ]],
 
     items = {
-        function()
-            local items = {}
-            for i, folder in ipairs(sessions.folders { existing = true, limit = 6 }) do
-                items[#items + 1] = {
-                    name = i .. '  ' .. vim.fn.fnamemodify(folder.root, ':~'),
-                    section = 'Recent folders',
-                    action = function() sessions.open_directory(folder.root) end,
-                }
-            end
-            return items
-        end,
-        { name = 'Open folder…', section = 'Actions', action = sessions.prompt_directory },
-        { name = 'All folders…', section = 'Actions', action = sessions.select },
-        { name = 'Recent files…', section = 'Actions', action = sessions.recent_files },
+        { name = 'Sessions', section = 'Actions', action = sessions.select },
+        { name = 'Recent files', section = 'Actions', action = sessions.recent_files },
         { name = 'Config', section = 'Actions', action = function() sessions.open_directory(vim.fn.stdpath 'config') end },
         { name = 'Update plugins', section = 'Actions', action = function() vim.pack.update() end },
         { name = 'Quit', section = 'Actions', action = 'qall' },
