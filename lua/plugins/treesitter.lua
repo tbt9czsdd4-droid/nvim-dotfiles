@@ -1,46 +1,27 @@
-local parsers = {
-    'bash',
-    'c',
-    'cpp',
-    'diff',
-    'html',
-    'json',
-    'lua',
-    'luadoc',
-    'markdown',
-    'markdown_inline',
-    'python',
-    'query',
-    'rust',
-    'toml',
-    'vim',
-    'vimdoc',
-    'vhdl',
-    'yaml',
-}
+require('nvim-treesitter').setup()
 
-local filetypes = {
-    'c',
-    'cpp',
-    'html',
-    'json',
-    'lua',
-    'markdown',
-    'python',
-    'rust',
-    'sh',
-    'toml',
-    'vim',
-    'vhdl',
-    'yaml',
-}
+-- New windows start open; sessions can still restore their saved fold state.
+vim.opt.foldlevel = 99
 
-local treesitter = require 'nvim-treesitter'
-treesitter.setup()
-treesitter.install(parsers)
+local function folds(buf)
+    if not vim.treesitter.highlighter.active[buf] then return end
+    for _, win in ipairs(vim.fn.win_findbuf(buf)) do
+        vim.wo[win].foldexpr = 'v:lua.vim.treesitter.foldexpr()'
+        vim.wo[win].foldmethod = 'expr'
+    end
+end
 
+local group = vim.api.nvim_create_augroup('config-treesitter', { clear = true })
 vim.api.nvim_create_autocmd('FileType', {
-    group = vim.api.nvim_create_augroup('kickstart-treesitter', { clear = true }),
-    pattern = filetypes,
-    callback = function(event) pcall(vim.treesitter.start, event.buf) end,
+    group = group,
+    callback = function(event)
+        if vim.bo[event.buf].buftype ~= '' or vim.bo[event.buf].filetype == 'bigfile' then return end
+        -- Missing parsers leave ordinary syntax highlighting available.
+        if pcall(vim.treesitter.start, event.buf) then folds(event.buf) end
+    end,
+})
+
+vim.api.nvim_create_autocmd('BufWinEnter', {
+    group = group,
+    callback = function(event) folds(event.buf) end,
 })

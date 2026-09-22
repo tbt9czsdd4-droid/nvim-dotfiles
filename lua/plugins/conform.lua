@@ -36,6 +36,17 @@ conform.setup {
         python = { 'ruff_format' },
         rust = { 'rustfmt', lsp_format = 'fallback' },
         sh = { 'shfmt' },
+        javascript = { 'prettier' },
+        javascriptreact = { 'prettier' },
+        typescript = { 'prettier' },
+        typescriptreact = { 'prettier' },
+        html = { 'prettier' },
+        css = { 'prettier' },
+        scss = { 'prettier' },
+        json = { 'prettier' },
+        jsonc = { 'prettier' },
+        yaml = { 'prettier' },
+        markdown = { 'prettier' },
     },
     formatters = {
         shfmt = {

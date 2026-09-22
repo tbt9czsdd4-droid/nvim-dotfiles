@@ -4,6 +4,26 @@ icons.setup {
 }
 icons.mock_nvim_web_devicons()
 
+require('mini.surround').setup {
+    mappings = {
+        add = 'gsa',
+        delete = 'gsd',
+        replace = 'gsr',
+        find = 'gsf',
+        find_left = 'gsF',
+        highlight = 'gsh',
+    },
+}
+
+require('mini.ai').setup {
+    mappings = {
+        around_next = 'aN',
+        inside_next = 'iN',
+        around_last = 'aL',
+        inside_last = 'iL',
+    },
+}
+
 require('mini.pairs').setup {
     modes = {
         insert = true,
@@ -15,7 +35,6 @@ require('mini.pairs').setup {
 require('mini.files').setup {
     options = {
         use_as_default_explorer = true,
-        lsp_timeout = 0,
     },
     windows = {
         preview = true,
@@ -38,10 +57,6 @@ diff.setup {
     view = {
         style = 'sign',
     },
-    mappings = {
-        apply = '',
-        reset = '',
-    },
 }
 
 vim.keymap.set('n', '<leader>ud', function() diff.toggle_overlay() end, { desc = 'Toggle diff overlay' })
@@ -59,6 +74,8 @@ clue.setup {
         { mode = { 'n', 'x' }, keys = '<Leader>b', desc = '+buffer' },
         { mode = { 'n', 'x' }, keys = '<Leader>c', desc = '+code' },
         { mode = { 'n', 'x' }, keys = '<Leader>f', desc = '+file/find' },
+        { mode = { 'n', 'x' }, keys = '<Leader>g', desc = '+git' },
+        { mode = { 'n', 'x' }, keys = 'gs', desc = '+surround' },
         { mode = { 'n', 'x' }, keys = '<Leader>q', desc = '+quit/session' },
         { mode = { 'n', 'x' }, keys = '<Leader>s', desc = '+search' },
         { mode = { 'n', 'x' }, keys = '<Leader>u', desc = '+ui/toggles' },

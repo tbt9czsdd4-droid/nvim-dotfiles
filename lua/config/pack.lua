@@ -2,7 +2,7 @@ vim.api.nvim_create_autocmd('PackChanged', {
     callback = function(event)
         local data = event.data
         if data.spec.name ~= 'nvim-treesitter' then return end
-        if data.kind ~= 'install' and data.kind ~= 'update' then return end
+        if data.kind ~= 'update' then return end
 
         if not data.active then vim.cmd.packadd 'nvim-treesitter' end
         require('nvim-treesitter').update(nil, { summary = true })
@@ -28,4 +28,5 @@ vim.pack.add {
     { src = 'https://github.com/folke/persistence.nvim' },
     { src = 'https://github.com/folke/snacks.nvim' },
     { src = 'https://github.com/gbprod/yanky.nvim' },
+    { src = 'https://github.com/MagicDuck/grug-far.nvim' },
 }

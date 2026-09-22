@@ -11,7 +11,6 @@ local servers = {
     'pyright',
     'ruff',
     'rust_analyzer',
-    'stylua',
     'taplo',
     'texlab',
     'tinymist',
@@ -68,9 +67,6 @@ vim.lsp.config('lua_ls', {
 vim.lsp.config('rust_analyzer', {
     settings = {
         ['rust-analyzer'] = {
-            cargo = {
-                allFeatures = true,
-            },
             check = {
                 command = 'clippy',
             },
@@ -126,6 +122,6 @@ vim.api.nvim_create_autocmd('LspAttach', {
 })
 
 require('mason-lspconfig').setup {
-    ensure_installed = servers,
+    ensure_installed = {},
     automatic_enable = servers,
 }

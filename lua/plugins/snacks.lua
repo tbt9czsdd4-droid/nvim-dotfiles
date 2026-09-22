@@ -14,6 +14,9 @@ require('snacks').setup {
             files = {
                 hidden = true,
             },
+            grep = {
+                hidden = true,
+            },
         },
     },
     indent = {
@@ -68,28 +71,45 @@ local function grep_selection()
 end
 
 local function buffer_lines()
+    local notified = false
     Snacks.picker.pick {
         title = 'Grep open buffers',
         finder = function()
             local items = {}
+            local skipped = 0
+            local max_size = Snacks.config.bigfile.size
 
             for _, buffer in ipairs(vim.api.nvim_list_bufs()) do
                 if vim.bo[buffer].buflisted and vim.bo[buffer].buftype == '' then
-                    vim.fn.bufload(buffer)
                     local file = vim.api.nvim_buf_get_name(buffer)
-
-                    for line_number, line in ipairs(vim.api.nvim_buf_get_lines(buffer, 0, -1, false)) do
-                        table.insert(items, {
-                            buf = buffer,
-                            file = file,
-                            line = line,
-                            pos = { line_number, 0 },
-                            text = file .. ' ' .. line,
-                        })
+                    local loaded = vim.api.nvim_buf_is_loaded(buffer)
+                    local size = loaded and vim.api.nvim_buf_get_offset(buffer, vim.api.nvim_buf_line_count(buffer)) or vim.fn.getfsize(file)
+                    if vim.bo[buffer].filetype == 'bigfile' or size > max_size then
+                        skipped = skipped + 1
+                    else
+                        vim.fn.bufload(buffer)
+                        -- Loading can also identify minified files as big files.
+                        if vim.bo[buffer].filetype == 'bigfile' then
+                            skipped = skipped + 1
+                        else
+                            for line_number, line in ipairs(vim.api.nvim_buf_get_lines(buffer, 0, -1, false)) do
+                                table.insert(items, {
+                                    buf = buffer,
+                                    file = file,
+                                    line = line,
+                                    pos = { line_number, 0 },
+                                    text = file .. ' ' .. line,
+                                })
+                            end
+                        end
                     end
                 end
             end
 
+            if skipped > 0 and not notified then
+                notified = true
+                vim.schedule(function() vim.notify(('Buffer search skipped %d large buffer(s)'):format(skipped)) end)
+            end
             return items
         end,
         format = 'file',
@@ -133,3 +153,7 @@ map('n', '<leader>?', function() Snacks.picker.keymaps { global = false } end, {
 map('n', '<leader>ft', function() Snacks.terminal.toggle(nil, { cwd = project_root() }) end, { desc = 'Terminal (project root)' })
 map('n', '<leader>fT', function() Snacks.terminal.toggle(nil, { cwd = vim.uv.cwd() }) end, { desc = 'Terminal (cwd)' })
 map('n', '<leader>E', function() Snacks.explorer { cwd = project_root() } end, { desc = 'Explorer (project)' })
+map('n', '<leader>gs', function() Snacks.picker.git_status { cwd = project_root() } end, { desc = 'Git status (workspace)' })
+map('n', '<leader>gd', function() Snacks.picker.git_diff { cwd = project_root() } end, { desc = 'Git diff (workspace)' })
+map('n', '<leader>gl', function() Snacks.picker.git_log { cwd = project_root() } end, { desc = 'Git history (workspace)' })
+map('n', '<leader>gf', function() Snacks.picker.git_log_file() end, { desc = 'Git history (current file)' })

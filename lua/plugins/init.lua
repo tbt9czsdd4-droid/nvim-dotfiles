@@ -4,6 +4,7 @@ require 'plugins.cyberdream'
 vim.cmd.colorscheme 'cyberdream'
 
 require 'plugins.snacks'
+require 'plugins.grug-far'
 require 'plugins.persistence'
 require 'plugins.mini'
 require 'plugins.blink-cmp'

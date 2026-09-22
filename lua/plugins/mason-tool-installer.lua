@@ -4,8 +4,7 @@ require('mason-tool-installer').setup {
         'ruff',
         'shfmt',
         'stylua',
+        'prettier',
     },
-    run_on_start = true,
-    start_delay = 1000,
-    debounce_hours = 24,
+    run_on_start = false,
 }
