@@ -1,6 +1,7 @@
 require('grug-far').setup {
     keymaps = {
         replace = { n = '<leader>r' },
+        syncNext = { n = '<leader>n' },
     },
     enabledEngines = { 'ripgrep' },
     engines = {
