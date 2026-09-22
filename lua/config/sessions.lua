@@ -198,6 +198,17 @@ local function clear_workspace()
     end
 end
 
+-- Older snapshots may list Grug-far's former persistent nofile buffers as
+-- ordinary, nonexistent files. Drop only those restored placeholders.
+local function clear_legacy_grug_buffers()
+    for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+        if vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].buftype == '' and not vim.bo[buf].modified then
+            local name = vim.api.nvim_buf_get_name(buf)
+            if vim.fs.basename(name):match '^Grug FAR %- %d+' and not uv.fs_stat(name) then vim.api.nvim_buf_delete(buf, { force = true }) end
+        end
+    end
+end
+
 function M.detach()
     owner = nil
     require('persistence').stop()
@@ -242,6 +253,7 @@ function M.open_directory(path, opts)
             local ok, err = pcall(function()
                 persistence.fire 'LoadPre'
                 vim.cmd('source ' .. vim.fn.fnameescape(file))
+                clear_legacy_grug_buffers()
                 persistence.fire 'LoadPost'
             end)
             vim.api.nvim_set_current_dir(path)
