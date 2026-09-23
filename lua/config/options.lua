@@ -24,7 +24,10 @@ opt.listchars = {
     nbsp = '␣',
 }
 
-vim.opt.sessionoptions:remove 'blank'
+opt.foldenable = false
+opt.foldmethod = 'manual'
+opt.foldexpr = '0'
+opt.sessionoptions:remove { 'blank', 'folds' }
 
 opt.inccommand = 'split'
 opt.cursorline = true

@@ -254,6 +254,15 @@ function M.open_directory(path, opts)
                 persistence.fire 'LoadPre'
                 vim.cmd('source ' .. vim.fn.fnameescape(file))
                 clear_legacy_grug_buffers()
+                -- Older snapshots can restore folding options in every tab.
+                vim.opt.foldenable = false
+                vim.opt.foldmethod = 'manual'
+                vim.opt.foldexpr = '0'
+                for _, win in ipairs(vim.api.nvim_list_wins()) do
+                    vim.wo[win].foldenable = false
+                    vim.wo[win].foldmethod = 'manual'
+                    vim.wo[win].foldexpr = '0'
+                end
                 persistence.fire 'LoadPost'
             end)
             vim.api.nvim_set_current_dir(path)
