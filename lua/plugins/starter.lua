@@ -4,6 +4,7 @@ local sessions = require 'config.sessions'
 starter.setup {
     autoopen = false, -- config.sessions distinguishes empty stdin from no arguments.
     evaluate_single = true,
+    query_updaters = starter.config.query_updaters .. 'O',
 
     header = [[
 ███╗   ██╗██╗   ██╗██╗███╗   ███╗
@@ -16,6 +17,7 @@ starter.setup {
 
     items = {
         { name = 'Sessions', section = 'Actions', action = sessions.select },
+        { name = 'Open folder', section = 'Actions', action = sessions.prompt_directory },
         { name = 'Recent files', section = 'Actions', action = sessions.recent_files },
         { name = 'Config', section = 'Actions', action = function() sessions.open_directory(vim.fn.stdpath 'config') end },
         { name = 'Update plugins', section = 'Actions', action = function() vim.pack.update() end },

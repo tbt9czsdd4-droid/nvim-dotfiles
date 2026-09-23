@@ -293,10 +293,36 @@ function M.open_directory(path, opts)
     return result
 end
 
+-- Complete one entire path rather than treating spaces as word separators.
+function M.complete_directory(findstart, base)
+    if findstart == 1 then return 0 end
+    return vim.fn.getcompletion(base, 'dir')
+end
+
 function M.prompt_directory()
-    vim.ui.input({ prompt = 'Open folder: ', default = vim.fn.getcwd() .. '/', completion = 'dir' }, function(path)
-        if path and path ~= '' then M.open_directory(vim.fn.expand(path)) end
+    local cwd = vim.fn.getcwd()
+    local win = Snacks.input({
+        prompt = 'Open folder',
+        default = cwd:gsub('/+$', '') .. '/',
+        completion = 'dir',
+        win = {
+            keys = {
+                i_esc = { '<Esc>', { 'cmp_close', 'cancel' }, mode = 'i', expr = true },
+                i_up = { '<Up>', { 'cmp_select_prev', 'hist_up' }, mode = { 'i', 'n' }, expr = true },
+                i_down = { '<Down>', { 'cmp_select_next', 'hist_down' }, mode = { 'i', 'n' }, expr = true },
+                i_ctrl_k = { '<C-k>', { 'cmp_select_prev', 'hist_up' }, mode = { 'i', 'n' }, expr = true },
+                i_ctrl_j = { '<C-j>', { 'cmp_select_next', 'hist_down' }, mode = { 'i', 'n' }, expr = true },
+            },
+        },
+    }, function(path)
+        if not path or path == '' then return end
+        path = vim.fn.expand(path)
+        if not vim.startswith(path, '/') then path = cwd .. '/' .. path end
+        M.open_directory(path)
     end)
+    -- Snacks reapplies window options when the dialog grows with the path.
+    win.opts.bo.completefunc = "v:lua.require'config.sessions'.complete_directory"
+    vim.bo[win.buf].completefunc = win.opts.bo.completefunc
 end
 
 function M.restore_current() return M.open_directory(vim.fn.getcwd()) end

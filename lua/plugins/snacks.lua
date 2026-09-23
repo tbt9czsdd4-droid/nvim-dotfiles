@@ -5,10 +5,6 @@ require('snacks').setup {
         enabled = true,
         size = 5 * 1024 * 1024,
     },
-    explorer = {
-        enabled = true,
-        replace_netrw = false,
-    },
     picker = {
         sources = {
             files = {
@@ -152,7 +148,6 @@ map('n', '<leader>su', function() Snacks.picker.undo() end, { desc = 'Undo histo
 map('n', '<leader>?', function() Snacks.picker.keymaps { global = false } end, { desc = 'Buffer-local keymaps' })
 map('n', '<leader>ft', function() Snacks.terminal.toggle(nil, { cwd = project_root() }) end, { desc = 'Terminal (project root)' })
 map('n', '<leader>fT', function() Snacks.terminal.toggle(nil, { cwd = vim.uv.cwd() }) end, { desc = 'Terminal (cwd)' })
-map('n', '<leader>E', function() Snacks.explorer { cwd = project_root() } end, { desc = 'Explorer (project)' })
 map('n', '<leader>gs', function() Snacks.picker.git_status { cwd = project_root() } end, { desc = 'Git status (workspace)' })
 map('n', '<leader>gd', function() Snacks.picker.git_diff { cwd = project_root() } end, { desc = 'Git diff (workspace)' })
 map('n', '<leader>gl', function() Snacks.picker.git_log { cwd = project_root() } end, { desc = 'Git history (workspace)' })
