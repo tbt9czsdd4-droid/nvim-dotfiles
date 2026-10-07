@@ -206,6 +206,22 @@ local ok, err = xpcall(function()
     assert(sessions.open_directory(legacy))
     equal(vim.g.workspace_legacy, 0)
 
+    -- Snapshots made before Grug-far became transient can list its old buffer
+    -- name as a missing file. Restore the real file without retaining that tab.
+    local old_grug = folder 'old-grug'
+    local keep = file(old_grug .. '/keep.txt')
+    assert(sessions.open_directory(old_grug))
+    edit(keep)
+    assert(sessions.open_directory(a))
+    local lines = vim.fn.readfile(snapshot(old_grug))
+    table.insert(lines, 1, 'badd +1 Grug\\ FAR\\ -\\ 1:\\ needle')
+    vim.fn.writefile(lines, snapshot(old_grug))
+    equal(sessions.open_directory(old_grug), 'loaded')
+    assert(vim.fn.bufnr(keep) > 0)
+    for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+        assert(not vim.api.nvim_buf_get_name(buf):find 'Grug FAR %- 1')
+    end
+
     -- Persistent command-line buffers must survive workspace replacement.
     local ui_buffer = vim.api.nvim_create_buf(false, true)
     local ui2 = package.loaded['vim._core.ui2']

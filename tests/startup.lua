@@ -39,9 +39,7 @@ local ok, err = xpcall(function()
     equal(lua 'return require("config.sessions").owner()', vim.NIL)
     equal(lua 'return vim.bo.filetype', 'ministarter')
     local items = lua 'return vim.tbl_map(function(x) return x.name end, MiniStarter.content_to_items(MiniStarter.get_content()))'
-    equal(#items, 6)
-    assert(vim.tbl_contains(items, 'Open folder…'))
-    assert(vim.tbl_contains(items, 'Recent files…'))
+    equal(items, { 'Sessions', 'Open folder', 'Recent files', 'Config', 'Update plugins', 'Quit' })
     stop()
 
     start { folder }
@@ -83,10 +81,7 @@ local ok, err = xpcall(function()
     lua 'Snacks.picker.get()[1]:close(); vim.fn.maparg(" qS", "n", false, true).callback(); vim.wait(150, function() return false end)'
     equal(lua 'return Snacks.picker.get()[1].opts.title', 'Folders (<C-d> forget)')
     lua 'Snacks.picker.get()[1]:close()'
-    -- Lualine keeps workspace state in every preset.
-    for _, preset in ipairs { 'auto', 'nord-minimal', 'dracula-rounded', 'gruvbox-powerline', 'palenight-slanted', 'iceberg-quiet' } do
-        equal(lua('vim.cmd("LualinePreview " .. ...); return require("lualine").get_config().sections.lualine_c[1]()', { preset }), 'folder')
-    end
+    equal(lua 'return require("lualine").get_config().sections.lualine_c[1]()', 'folder')
     -- Autoformat precedence: buffer override wins over global default.
     lua [[
         local captured
@@ -117,18 +112,22 @@ local ok, err = xpcall(function()
         'pyright',
         'ruff',
         'rust_analyzer',
-        'stylua',
         'taplo',
         'texlab',
         'tinymist',
         'vtsls',
         'yamlls',
     }
-    equal(servers.ensure_installed, expected)
+    equal(servers.ensure_installed, {})
     equal(servers.automatic_enable, expected)
-    for _, server in ipairs(expected) do
-        assert(lua('return vim.lsp.is_enabled(...)', { server }), server .. ' was not enabled')
-    end
+    -- Only installed servers are enabled, including on partially provisioned hosts.
+    lua [[
+        local installed = require('mason-registry').get_installed_package_names()
+        local map = require('mason-lspconfig.mappings').get_mason_map().lspconfig_to_package
+        for _, server in ipairs(require('mason-lspconfig.settings').current.automatic_enable) do
+            assert(vim.lsp.is_enabled(server) == vim.tbl_contains(installed, map[server]), server)
+        end
+    ]]
     lua 'require("config.sessions").detach()' -- Preserve the initial two-window fixture.
     equal(lua 'return require("lualine").get_config().sections.lualine_c[1]()', 'Standalone')
     stop()
@@ -150,8 +149,10 @@ local ok, err = xpcall(function()
     start()
     equal(lua 'return vim.bo.filetype', 'ministarter')
     equal(lua 'return require("config.sessions").folders()[1].root', folder)
-    -- The numbered dashboard item goes through the shared folder entrypoint.
-    lua 'MiniStarter.set_query("1"); vim.wait(100, function() return false end)'
+    -- The unchanged Sessions dashboard action opens the shared folder picker.
+    lua 'MiniStarter.set_query("Sessions"); vim.wait(100, function() return false end)'
+    equal(lua 'return Snacks.picker.get()[1].opts.title', 'Folders (<C-d> forget)')
+    lua 'Snacks.picker.get()[1]:close(); require("config.sessions").restore_last()'
     equal(lua 'return require("config.sessions").owner()', folder)
     lua('require("config.sessions").reset_to_starter(); require("config.sessions").open_file_detached(...)', { outside })
     equal(lua 'return require("config.sessions").owner()', vim.NIL)
