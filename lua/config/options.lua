@@ -28,6 +28,8 @@ opt.foldenable = false
 opt.foldmethod = 'manual'
 opt.foldexpr = '0'
 opt.sessionoptions:remove { 'blank', 'folds' }
+-- Saves g:BufferlinePositions, so reordered buffer tabs survive a workspace switch.
+opt.sessionoptions:append 'globals'
 
 opt.inccommand = 'split'
 opt.cursorline = true
@@ -36,6 +38,9 @@ opt.confirm = true
 opt.termguicolors = true
 opt.laststatus = 3
 opt.winborder = 'rounded'
+opt.splitkeep = 'screen'
+opt.linebreak = true
+opt.virtualedit = 'block'
 
 opt.statuscolumn = '%s%C%=%{v:relnum == 0 ? v:lnum : v:relnum}   '
 
@@ -46,24 +51,34 @@ opt.shiftwidth = 4
 opt.softtabstop = 4
 opt.shiftround = true
 
+vim.g.is_ssh = vim.env.SSH_CONNECTION ~= nil or vim.env.SSH_TTY ~= nil
+
 -- Over SSH, send yanks to the client's clipboard with OSC 52, but do not try
 -- to read it back: many terminals either forbid clipboard reads or never
--- answer, which makes `p` wait for an OSC 52 response.  Terminal paste
--- (usually Ctrl-Shift-V) still works normally.
-local is_ssh = vim.env.SSH_CONNECTION ~= nil or vim.env.SSH_TTY ~= nil
-if is_ssh then
+-- answer, which makes `p` wait for an OSC 52 response. Pasting returns the
+-- last yank made in this Neovim instead. Terminal paste (usually
+-- Ctrl-Shift-V) still inserts text copied on the client.
+if vim.g.is_ssh then
     local osc52 = require 'vim.ui.clipboard.osc52'
-    local paste_disabled = function() return {} end
+    local last = { {}, 'v' }
+    local function copy(register)
+        local send = osc52.copy(register)
+        return function(lines, regtype)
+            last = { lines, regtype }
+            send(lines)
+        end
+    end
+    local function paste() return last end
 
     vim.g.clipboard = {
         name = 'OSC 52',
         copy = {
-            ['+'] = osc52.copy '+',
-            ['*'] = osc52.copy '*',
+            ['+'] = copy '+',
+            ['*'] = copy '*',
         },
         paste = {
-            ['+'] = paste_disabled,
-            ['*'] = paste_disabled,
+            ['+'] = paste,
+            ['*'] = paste,
         },
     }
     opt.clipboard = 'unnamedplus'

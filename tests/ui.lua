@@ -4,6 +4,7 @@ local config, data = vim.fn.getcwd(), vim.fn.stdpath 'data'
 local base = assert(vim.uv.fs_mkdtemp((vim.env.TMPDIR or '/tmp') .. '/nvim-ui-XXXXXX'))
 vim.fn.mkdir(base .. '/project', 'p')
 vim.fn.writefile({ 'hello world' }, base .. '/project/sample.txt')
+vim.fn.writefile({ 'second file' }, base .. '/project/second.txt')
 vim.fn.mkdir(base .. '/folder with spaces/child one', 'p')
 vim.fn.mkdir(base .. '/folder with spaces/child two', 'p')
 local child, replies, stderr, grid, unpacker, exited, stdin, stdout, errorpipe
@@ -233,6 +234,28 @@ local ok, err = xpcall(function()
         assert(lua [=[return vim.api.nvim_win_get_cursor(0)[2] == 6 and vim.api.nvim_get_current_line() == 'call()']=])
         input '<Esc>'
         lua [=[vim.cmd('bwipeout!')]=]
+        if case[3] then
+            -- Over SSH only yanks copy, and pasting reuses the last yank without querying the terminal.
+            lua [=[vim.cmd.enew(); vim.api.nvim_buf_set_lines(0, 0, -1, false, { 'alpha', 'beta', 'gamma', 'delta' })]=]
+            input 'ggyyjp'
+            assert(lua [=[return table.concat(vim.api.nvim_buf_get_lines(0, 0, -1, false), '|') == 'alpha|beta|alpha|gamma|delta']=])
+            input 'xjdd'
+            assert(lua [=[return vim.fn.getreg('+') == 'alpha\n']=], lua [=[return vim.inspect(vim.fn.getreg('+'))]=])
+            input 'ggjVpjVp'
+            assert(lua [=[return table.concat(vim.api.nvim_buf_get_lines(0, 0, -1, false), '|') == 'alpha|alpha|alpha|delta']=])
+            assert(lua [=[return not vim.api.nvim_exec2('messages', { output = true }).output:find('is empty', 1, true)]=])
+            lua [=[vim.cmd('bwipeout!')]=]
+        end
+        -- Alt+Shift+h reorders buffer tabs; the order survives reopening the workspace.
+        lua([[local root = ...; vim.cmd.edit(root .. '/sample.txt'); vim.cmd.edit(root .. '/second.txt')]], { base .. '/project' })
+        local function order()
+            return lua [=[return vim.tbl_map(function(e) return vim.fs.basename(e.path) end, require('bufferline').get_elements().elements)]=]
+        end
+        wait(function() return vim.deep_equal(order(), { 'sample.txt', 'second.txt' }) end, 'Bufferline did not list both files: ' .. vim.inspect(order()))
+        input '<M-H>'
+        wait(function() return vim.deep_equal(order(), { 'second.txt', 'sample.txt' }) end, 'Alt+Shift+h did not move the buffer')
+        lua [=[require('config.sessions').reset_to_starter(); require('config.sessions').restore_last()]=]
+        wait(function() return vim.deep_equal(order(), { 'second.txt', 'sample.txt' }) end, 'Buffer order was not restored: ' .. vim.inspect(order()))
         -- Restore with ui2 attached; cancel the modified-buffer transition using real input.
         lua [=[vim.api.nvim_buf_set_lines(0,0,1,false,{'unsaved'}); vim.schedule(function() require('config.sessions').reset_to_starter() end)]=]
         input '<Esc>'
@@ -250,7 +273,7 @@ local ok, err = xpcall(function()
     lua [=[vim.cmd.enew(); vim.bo.filetype='typescript']=]
     assert(lua [=[return not vim.treesitter.highlighter.active[vim.api.nvim_get_current_buf()]]=])
     assert(lua [=[return #require('mason-registry').get_installed_package_names() == 0]=])
-    assert(lua [=[return vim.tbl_isempty(require('mason-lspconfig.settings').current.ensure_installed)]=])
+    assert(lua [=[return package.loaded['mason-lspconfig'] == nil]=])
     vim.wait(1500, function() return false end)
     assert(lua [=[return #require('mason-registry').get_installed_package_names() == 0]=])
     assert(lua [=[return #vim.fn.glob(vim.fn.stdpath('data') .. '/site/parser/*',true,true) == 0]=])

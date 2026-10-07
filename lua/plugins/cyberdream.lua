@@ -1,8 +1,9 @@
-local is_ssh = vim.env.SSH_CONNECTION ~= nil
-
 require('cyberdream').setup {
     variant = 'default',
-    transparent = not is_ssh,
+    transparent = not vim.g.is_ssh,
     italic_keywords = false,
     terminal_colors = false,
+    highlights = {
+        CursorLineNr = { fg = '#ff9e64', bg = '#2a2e36', bold = true },
+    },
 }

@@ -1,6 +1,7 @@
 local M = {}
 local uv = vim.uv
 local owner
+local dir
 local history_file
 local stdin = false
 
@@ -13,19 +14,7 @@ end
 local function protected(path) return path == '/' or path == normalize(vim.env.HOME) end
 local function label(path) return vim.fn.fnamemodify(path, ':~') end
 local function fail(message) vim.notify(message, vim.log.levels.ERROR) end
-local function session_dir() return require('persistence.config').options.dir end
-local function snapshot(root) return session_dir() .. root:gsub('[\\/:]+', '%%') .. '.vim' end
-
-local function root_from_session(file)
-    local encoded = vim.split(vim.fn.fnamemodify(file, ':t:r'), '%%', { plain = true })[1]
-    return normalize(encoded:gsub('%%', '/'))
-end
-
-local function snapshots(root, backups)
-    local files = vim.fn.glob(session_dir() .. '*.vim', true, true)
-    if backups then vim.list_extend(files, vim.fn.glob(session_dir() .. 'legacy/*.vim', true, true)) end
-    return vim.tbl_filter(function(file) return not root or root_from_session(file) == root end, files)
-end
+local function snapshot(root) return dir .. root:gsub('[\\/:]+', '%%') .. '.vim' end
 
 local function atomic_write(path, lines)
     vim.fn.mkdir(vim.fs.dirname(path), 'p')
@@ -43,40 +32,13 @@ end
 local function write_history(index) atomic_write(history_file, { vim.json.encode(index) }) end
 
 local function history()
-    local index = { version = 1, folders = {}, migrated = {} }
+    local index = { version = 1, folders = {} }
     if vim.fn.filereadable(history_file) == 1 then
-        index = vim.json.decode(table.concat(vim.fn.readfile(history_file), '\n'))
-        assert(type(index) == 'table' and type(index.folders) == 'table' and type(index.migrated) == 'table', 'Invalid folder history: ' .. history_file)
-    end
-    if not index.seeded then
-        for _, file in ipairs(snapshots()) do
-            local root, stat = root_from_session(file), uv.fs_stat(file)
-            if stat and not protected(root) then index.folders[root] = math.max(index.folders[root] or 0, stat.mtime.sec) end
-        end
-        index.seeded = true
-        write_history(index)
+        local stored = vim.json.decode(table.concat(vim.fn.readfile(history_file), '\n'))
+        assert(type(stored) == 'table' and type(stored.folders) == 'table', 'Invalid folder history: ' .. history_file)
+        index.folders = stored.folders
     end
     return index
-end
-
--- Preserve all old variants before choosing the newest snapshot, exactly once.
-local function migrate(root)
-    local index = history()
-    if index.migrated[root] then return end
-    local candidates = snapshots(root)
-    table.sort(candidates, function(a, b)
-        local x, y = uv.fs_stat(a).mtime, uv.fs_stat(b).mtime
-        if x.sec ~= y.sec then return x.sec > y.sec end
-        if x.nsec ~= y.nsec then return x.nsec > y.nsec end
-        return a < b
-    end)
-    for _, file in ipairs(candidates) do
-        local backup = session_dir() .. 'legacy/' .. vim.fs.basename(file)
-        if vim.fn.filereadable(backup) == 0 then atomic_write(backup, vim.fn.readfile(file, 'b')) end
-    end
-    if candidates[1] then atomic_write(snapshot(root), vim.fn.readfile(candidates[1], 'b')) end
-    index.migrated[root] = true
-    write_history(index)
 end
 
 function M.folders(opts)
@@ -146,36 +108,28 @@ local function has_files()
 end
 
 function M.save()
-    local persistence = require 'persistence'
-    if not owner or not persistence.active() then return true end
+    if not owner then return true end
     if vim.fn.isdirectory(owner) == 0 then
         fail('Cannot save workspace: folder no longer exists: ' .. owner)
         return false
     end
-    local config = require('persistence.config').options
-    local directory, cwd = config.dir, vim.fn.getcwd()
-    local destination = snapshot(owner)
-    local staging = directory .. '.save-' .. uv.os_getpid() .. '/'
-    local temporary
+    local cwd, destination = vim.fn.getcwd(), snapshot(owner)
+    -- Write next to the snapshot, then rename: a failed save keeps the old one.
+    local temporary = destination .. '.' .. uv.os_getpid() .. '.tmp'
     local ok, err = pcall(function()
-        vim.fn.mkdir(staging, 'p')
+        vim.fn.mkdir(dir, 'p')
+        -- :mksession records the current directory, so save from the workspace root.
         vim.api.nvim_set_current_dir(owner)
-        persistence.fire 'SavePre'
-        config.dir = staging
-        temporary = persistence.current()
-        persistence.save()
+        vim.cmd('mksession! ' .. vim.fn.fnameescape(temporary))
         assert(uv.fs_rename(temporary, destination))
     end)
-    config.dir = directory
-    if temporary then vim.fn.delete(temporary) end
-    vim.fn.delete(staging, 'd')
+    vim.fn.delete(temporary)
     if vim.fn.isdirectory(cwd) == 1 then vim.api.nvim_set_current_dir(cwd) end
     if not ok then
         fail('Cannot save workspace: ' .. tostring(err))
         return false
     end
     vim.v.this_session = destination
-    persistence.fire 'SavePost'
     return true
 end
 
@@ -196,33 +150,11 @@ local function clear_workspace()
     for _, buf in ipairs(vim.api.nvim_list_bufs()) do
         if vim.api.nvim_buf_is_valid(buf) and not vim.tbl_contains(ui_buffers or {}, buf) then vim.api.nvim_buf_delete(buf, { force = true }) end
     end
+    -- Bufferline's tab order is per workspace; the next snapshot restores its own.
+    vim.g.BufferlinePositions = nil
 end
 
--- Older snapshots may list Grug-far's former persistent nofile buffers as
--- ordinary, nonexistent files. Drop only those restored placeholders.
-local function clear_legacy_grug_buffers()
-    for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-        if vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].buftype == '' and not vim.bo[buf].modified then
-            local name = vim.api.nvim_buf_get_name(buf)
-            if vim.fs.basename(name):match '^Grug FAR %- %d+' and not uv.fs_stat(name) then vim.api.nvim_buf_delete(buf, { force = true }) end
-        end
-    end
-end
-
-function M.detach()
-    owner = nil
-    require('persistence').stop()
-end
-
-local function activate(root)
-    vim.api.nvim_set_current_dir(root)
-    owner = root
-    local persistence = require 'persistence'
-    persistence.start()
-    -- Use our guarded, atomic save on exit as well as during transitions.
-    vim.api.nvim_clear_autocmds { group = 'persistence' }
-    vim.api.nvim_create_autocmd('VimLeavePre', { group = 'persistence', callback = M.save })
-end
+function M.detach() owner = nil end
 
 function M.open_directory(path, opts)
     opts = opts or {}
@@ -231,13 +163,6 @@ function M.open_directory(path, opts)
     if vim.fn.isdirectory(path) == 0 then
         fail('Folder does not exist: ' .. path)
         return false
-    end
-    if not protected(path) then
-        local ok, err = pcall(migrate, path)
-        if not ok then
-            fail('Cannot prepare folder session: ' .. tostring(err))
-            return false
-        end
     end
     if not prepare_transition() then return false end
     M.detach()
@@ -248,23 +173,8 @@ function M.open_directory(path, opts)
         local file = snapshot(path)
         result = vim.fn.filereadable(file) == 1 and 'loaded' or 'created'
         if result == 'loaded' then
-            -- Persistence.load() uses silent! and hides restoration errors.
-            local persistence = require 'persistence'
-            local ok, err = pcall(function()
-                persistence.fire 'LoadPre'
-                vim.cmd('source ' .. vim.fn.fnameescape(file))
-                clear_legacy_grug_buffers()
-                -- Older snapshots can restore folding options in every tab.
-                vim.opt.foldenable = false
-                vim.opt.foldmethod = 'manual'
-                vim.opt.foldexpr = '0'
-                for _, win in ipairs(vim.api.nvim_list_wins()) do
-                    vim.wo[win].foldenable = false
-                    vim.wo[win].foldmethod = 'manual'
-                    vim.wo[win].foldexpr = '0'
-                end
-                persistence.fire 'LoadPost'
-            end)
+            -- Not silent!: restoration errors must be reported.
+            local ok, err = pcall(vim.cmd, 'source ' .. vim.fn.fnameescape(file))
             vim.api.nvim_set_current_dir(path)
             -- :mksession scripts contain :only, which also closes UI floats.
             -- Recreate those targets before ui2's deferred prompt cleanup runs.
@@ -275,7 +185,7 @@ function M.open_directory(path, opts)
                 return false
             end
         end
-        activate(path)
+        owner = path
         local ok, err = pcall(function()
             local index = history()
             local seconds, microseconds = uv.gettimeofday()
@@ -336,12 +246,11 @@ end
 function M.delete(root, opts)
     opts = opts or {}
     root = normalize(root)
-    if opts.confirm ~= false and vim.fn.confirm('Delete saved sessions for ' .. label(root) .. '?', '&Delete\n&Cancel', 2) ~= 1 then return false end
-    for _, file in ipairs(snapshots(root, true)) do
-        if vim.fn.delete(file) ~= 0 then
-            fail('Cannot delete session: ' .. file)
-            return false
-        end
+    if opts.confirm ~= false and vim.fn.confirm('Delete the saved session for ' .. label(root) .. '?', '&Delete\n&Cancel', 2) ~= 1 then return false end
+    local file = snapshot(root)
+    if vim.fn.filereadable(file) == 1 and vim.fn.delete(file) ~= 0 then
+        fail('Cannot delete session: ' .. file)
+        return false
     end
     if owner == root then M.detach() end
     return true
@@ -349,11 +258,10 @@ end
 
 function M.forget(root)
     root = normalize(root)
-    if vim.fn.confirm('Forget ' .. label(root) .. ' and delete its saved sessions?', '&Forget\n&Cancel', 2) ~= 1 then return false end
+    if vim.fn.confirm('Forget ' .. label(root) .. ' and delete its saved session?', '&Forget\n&Cancel', 2) ~= 1 then return false end
     if not M.delete(root, { confirm = false }) then return false end
     local index = history()
     index.folders[root] = nil
-    -- Keep the migration marker so stale legacy copies cannot be imported again.
     write_history(index)
     return true
 end
@@ -436,10 +344,11 @@ function M.owner() return owner end
 
 function M.setup(opts)
     opts = opts or {}
+    dir = opts.dir or vim.fn.stdpath 'state' .. '/sessions/'
     history_file = opts.history_file or vim.fn.stdpath 'state' .. '/recent-folders.json'
-    require('persistence').setup { dir = opts.dir, need = 0, branch = false }
     M.detach()
     local group = vim.api.nvim_create_augroup('folder-workspaces', { clear = true })
+    vim.api.nvim_create_autocmd('VimLeavePre', { group = group, callback = function() M.save() end })
     vim.api.nvim_create_autocmd('StdinReadPre', { group = group, callback = function() stdin = true end })
     local directory
     local no_arguments = vim.fn.argc() == 0

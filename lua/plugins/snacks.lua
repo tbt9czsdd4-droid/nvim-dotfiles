@@ -38,6 +38,7 @@ vim.api.nvim_create_autocmd('FileType', {
     pattern = 'bigfile',
     callback = function(event)
         vim.b[event.buf].minidiff_disable = true
+        vim.b[event.buf].minihipatterns_disable = true
         vim.b[event.buf].snacks_indent = false
         vim.b[event.buf].snacks_scope = false
     end,
@@ -135,6 +136,12 @@ map('n', '<leader>sG', function() grep(vim.uv.cwd()) end, { desc = 'Grep cwd' })
 map('n', '<leader>sb', function() Snacks.picker.lines() end, { desc = 'Buffer lines' })
 map('n', '<leader>sB', buffer_lines, { desc = 'Grep open buffers' })
 map({ 'n', 'x' }, '<leader>sw', grep_selection, { desc = 'Search word/selection' })
+map(
+    'n',
+    '<leader>st',
+    function() Snacks.picker.grep { cwd = project_root(), search = [[\b(TODO|FIXME|HACK|NOTE)\b]], regex = true } end,
+    { desc = 'Search TODOs' }
+)
 map('n', '<leader>s"', function() Snacks.picker.registers() end, { desc = 'Registers' })
 map('n', '<leader>sa', function() Snacks.picker.autocmds() end, { desc = 'Autocommands' })
 map('n', '<leader>sc', function() Snacks.picker.command_history() end, { desc = 'Command history' })

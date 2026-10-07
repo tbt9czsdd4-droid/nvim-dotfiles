@@ -105,10 +105,42 @@ local ok, err = xpcall(function()
     keys 'ciachanged<Esc>'
     equal(vim.api.nvim_get_current_line(), 'call(changed, second)')
     assert(vim.fn.maparg('s', 'n', false, true).desc == 'Flash')
-    equal(vim.fn.maparg('d', 'n'), '"_d')
+    for _, key in ipairs { 'd', 'D', 'c', 'C', 'x', 'X', '<Del>' } do
+        equal(vim.fn.maparg(key, 'n'), '"_' .. key)
+        equal(vim.fn.maparg(key, 'x'), '"_' .. key)
+    end
+    equal(vim.fn.maparg('p', 'x'), 'P')
+    equal(vim.fn.maparg('<M-H>', 'n'), '<Cmd>BufferLineMovePrev<CR>')
+    equal(vim.fn.maparg('<M-L>', 'n'), '<Cmd>BufferLineMoveNext<CR>')
+
+    -- Only yanking copies, and the cursor stays where the yank started. The
+    -- system clipboard is switched off so the test cannot overwrite it.
+    vim.wait(1000, function() return vim.o.clipboard == 'unnamedplus' end)
+    vim.o.clipboard = ''
+    vim.api.nvim_buf_set_lines(0, 0, -1, false, { 'alpha beta', 'second', 'third' })
+    vim.api.nvim_win_set_cursor(0, { 1, 7 })
+    keys 'yiw'
+    equal(vim.api.nvim_win_get_cursor(0), { 1, 7 })
+    equal(vim.fn.getreg '"', 'beta')
+    -- A cancelled yank must not move the cursor on the next one.
+    keys 'y<Esc>'
+    vim.api.nvim_win_set_cursor(0, { 1, 9 })
+    keys 'Y'
+    equal(vim.api.nvim_win_get_cursor(0), { 1, 9 })
+    vim.api.nvim_win_set_cursor(0, { 1, 0 })
+    keys 'yy'
+    keys 'jx'
+    keys 'dd'
+    keys 'ciwX<Esc>'
+    equal(vim.api.nvim_buf_get_lines(0, 0, -1, false), { 'alpha beta', 'X' })
+    keys 'Vp'
+    keys 'Vp'
+    equal(vim.api.nvim_buf_get_lines(0, 0, -1, false), { 'alpha beta', 'alpha beta' })
+    equal(vim.fn.getreg '"', 'alpha beta\n')
+    vim.o.clipboard = 'unnamedplus'
     vim.cmd 'bwipeout!'
 
-    -- Highlighting stays active; new windows and legacy sessions stay unfolded.
+    -- Highlighting stays active; new windows stay unfolded and snapshots carry no fold state.
     local tsfile = write(root .. '/folds.ts', { 'function example() {', '  const value = 1;', '  return value;', '}', '' })
     vim.cmd.edit(tsfile)
     assert(vim.treesitter.highlighter.active[vim.api.nvim_get_current_buf()])
@@ -123,23 +155,9 @@ local ok, err = xpcall(function()
     unfolded()
     vim.cmd 'tab split'
     unfolded()
-    local tabs, windows = #vim.api.nvim_list_tabpages(), #vim.api.nvim_list_wins()
-    -- Create a real old-style snapshot with closed syntax folds in every window.
-    local sessionoptions = vim.o.sessionoptions
     assert(not vim.tbl_contains(vim.opt.sessionoptions:get(), 'folds'))
-    vim.opt.sessionoptions:append 'folds'
-    for _, win in ipairs(vim.api.nvim_list_wins()) do
-        vim.api.nvim_win_call(win, function()
-            vim.wo.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
-            vim.wo.foldmethod = 'expr'
-            vim.wo.foldenable = true
-            vim.cmd 'normal! zx'
-            vim.cmd 'normal! zM'
-            assert(vim.fn.foldclosed(1) > 0)
-        end)
-    end
+    local tabs, windows = #vim.api.nvim_list_tabpages(), #vim.api.nvim_list_wins()
     assert(sessions.reset_to_starter())
-    vim.o.sessionoptions = sessionoptions
     assert(sessions.open_directory(root, { picker = false }))
     equal(#vim.api.nvim_list_tabpages(), tabs)
     equal(#vim.api.nvim_list_wins(), windows)

@@ -69,6 +69,11 @@ clue.setup {
         { mode = { 'n', 'x' }, keys = ']' },
         { mode = { 'n', 'x' }, keys = 'g' },
         { mode = { 'n', 'x' }, keys = 'z' },
+        { mode = 'n', keys = '<C-w>' },
+        { mode = { 'n', 'x' }, keys = "'" },
+        { mode = { 'n', 'x' }, keys = '`' },
+        { mode = { 'n', 'x' }, keys = '"' },
+        { mode = { 'i', 'c' }, keys = '<C-r>' },
     },
     clues = {
         { mode = { 'n', 'x' }, keys = '<Leader>b', desc = '+buffer' },
@@ -82,6 +87,9 @@ clue.setup {
         clue.gen_clues.square_brackets(),
         clue.gen_clues.g(),
         clue.gen_clues.z(),
+        clue.gen_clues.windows(),
+        clue.gen_clues.marks(),
+        clue.gen_clues.registers(),
     },
     window = {
         delay = 300,
@@ -101,10 +109,20 @@ require('mini.move').setup {
     },
 }
 
+local hipatterns = require 'mini.hipatterns'
+hipatterns.setup {
+    highlighters = {
+        fixme = { pattern = '%f[%w]()FIXME()%f[%W]', group = 'MiniHipatternsFixme' },
+        hack = { pattern = '%f[%w]()HACK()%f[%W]', group = 'MiniHipatternsHack' },
+        todo = { pattern = '%f[%w]()TODO()%f[%W]', group = 'MiniHipatternsTodo' },
+        note = { pattern = '%f[%w]()NOTE()%f[%W]', group = 'MiniHipatternsNote' },
+        hex_color = hipatterns.gen_highlighter.hex_color(),
+    },
+}
+
 -- Avoid extra redraw traffic over SSH. Snacks also disables animations
 -- buffer-locally whenever its big-file mode is active.
-local is_ssh = vim.env.SSH_CONNECTION ~= nil or vim.env.SSH_TTY ~= nil
-if is_ssh then return end
+if vim.g.is_ssh then return end
 
 local animate = require 'mini.animate'
 local max_animated_scroll = 1000

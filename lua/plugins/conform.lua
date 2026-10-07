@@ -6,12 +6,7 @@ local function autoformat_enabled(bufnr)
     return vim.g.autoformat == true
 end
 
-local function format()
-    conform.format {
-        async = true,
-        lsp_format = 'fallback',
-    }
-end
+local function format() conform.format { async = true } end
 
 local function notify_autoformat(scope, enabled) vim.notify(string.format('%s autoformat %s', scope, enabled and 'enabled' or 'disabled'), vim.log.levels.INFO) end
 
@@ -22,10 +17,7 @@ conform.setup {
     },
     format_on_save = function(bufnr)
         if not autoformat_enabled(bufnr) then return end
-        return {
-            timeout_ms = 500,
-            lsp_format = 'fallback',
-        }
+        return { timeout_ms = 500 }
     end,
     formatters_by_ft = {
         bash = { 'shfmt' },
@@ -34,7 +26,7 @@ conform.setup {
         cpp = { 'clang_format' },
         lua = { 'stylua' },
         python = { 'ruff_format' },
-        rust = { 'rustfmt', lsp_format = 'fallback' },
+        rust = { 'rustfmt' },
         sh = { 'shfmt' },
         javascript = { 'prettier' },
         javascriptreact = { 'prettier' },

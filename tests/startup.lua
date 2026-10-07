@@ -98,36 +98,34 @@ local ok, err = xpcall(function()
         vim.b.autoformat = nil; assert(f(0))
         vim.fn.maparg(' uF', 'n', false, true).callback(); vim.wait(150, function() return false end); assert(vim.b.autoformat == false and f(0) == nil)
     ]]
-    local servers = lua 'return require("mason-lspconfig.settings").current'
-    local expected = {
-        'angularls',
-        'bashls',
-        'clangd',
-        'docker_compose_language_service',
-        'dockerls',
-        'jsonls',
-        'lua_ls',
-        'markdown_oxide',
-        'neocmake',
-        'pyright',
-        'ruff',
-        'rust_analyzer',
-        'taplo',
-        'texlab',
-        'tinymist',
-        'vtsls',
-        'yamlls',
+    -- Supported servers are enabled exactly when their executable is on PATH,
+    -- including on partially provisioned hosts.
+    local servers = {
+        angularls = 'ngserver',
+        bashls = 'bash-language-server',
+        clangd = 'clangd',
+        docker_compose_language_service = 'docker-compose-langserver',
+        dockerls = 'docker-langserver',
+        jsonls = 'vscode-json-language-server',
+        lua_ls = 'lua-language-server',
+        markdown_oxide = 'markdown-oxide',
+        neocmake = 'neocmakelsp',
+        pyright = 'pyright-langserver',
+        ruff = 'ruff',
+        rust_analyzer = 'rust-analyzer',
+        taplo = 'taplo',
+        texlab = 'texlab',
+        tinymist = 'tinymist',
+        vtsls = 'vtsls',
+        yamlls = 'yaml-language-server',
     }
-    equal(servers.ensure_installed, {})
-    equal(servers.automatic_enable, expected)
-    -- Only installed servers are enabled, including on partially provisioned hosts.
-    lua [[
-        local installed = require('mason-registry').get_installed_package_names()
-        local map = require('mason-lspconfig.mappings').get_mason_map().lspconfig_to_package
-        for _, server in ipairs(require('mason-lspconfig.settings').current.automatic_enable) do
-            assert(vim.lsp.is_enabled(server) == vim.tbl_contains(installed, map[server]), server)
-        end
-    ]]
+    lua(
+        [[for server, executable in pairs(...) do
+            assert(vim.lsp.is_enabled(server) == (vim.fn.executable(executable) == 1), server)
+        end]],
+        { servers }
+    )
+    assert(lua 'return package.loaded["mason-lspconfig"] == nil')
     lua 'require("config.sessions").detach()' -- Preserve the initial two-window fixture.
     equal(lua 'return require("lualine").get_config().sections.lualine_c[1]()', 'Standalone')
     stop()
@@ -143,7 +141,6 @@ local ok, err = xpcall(function()
     for _, args in ipairs { { afile }, { afile, outside }, { folder, outside } } do
         start(args)
         equal(lua 'return require("config.sessions").owner()', vim.NIL)
-        assert(not lua 'return require("persistence").active()')
         stop()
     end
     start()
@@ -174,7 +171,7 @@ local ok, err = xpcall(function()
     -- Pipe startup, including empty stdin, must never activate a workspace/dashboard.
     for i, content in ipairs { 'from stdin\n', '' } do
         local report = base .. '/stdin-' .. i .. '.json'
-        local code = 'lua vim.defer_fn(function() vim.fn.writefile({vim.json.encode({owner=require("config.sessions").owner() or false, active=require("persistence").active(), ft=vim.bo.filetype, lines=vim.api.nvim_buf_get_lines(0,0,-1,false)})}, '
+        local code = 'lua vim.defer_fn(function() vim.fn.writefile({vim.json.encode({owner=require("config.sessions").owner() or false, ft=vim.bo.filetype, lines=vim.api.nvim_buf_get_lines(0,0,-1,false)})}, '
             .. string.format('%q', report)
             .. '); vim.cmd("qa!") end, 250)'
         local result = vim.system({ 'nvim', '--headless', '-i', 'NONE', '-u', config .. '/init.lua', '+' .. code, '-' }, {
@@ -184,7 +181,6 @@ local ok, err = xpcall(function()
         equal(result.code, 0)
         local data = vim.json.decode(table.concat(vim.fn.readfile(report)))
         equal(data.owner, false)
-        equal(data.active, false)
         assert(data.ft ~= 'ministarter')
         equal(data.lines, { i == 1 and 'from stdin' or '' })
     end

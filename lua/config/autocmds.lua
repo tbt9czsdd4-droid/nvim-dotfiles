@@ -1,14 +1,6 @@
 local autocmd = vim.api.nvim_create_autocmd
 local augroup = vim.api.nvim_create_augroup
 
-local function set_line_number_highlight()
-    vim.api.nvim_set_hl(0, 'CursorLineNr', {
-        fg = '#ff9e64',
-        bg = '#2a2e36',
-        bold = true,
-    })
-end
-
 autocmd({ 'FocusGained', 'TermClose', 'TermLeave' }, {
     group = augroup('kickstart-checktime', { clear = true }),
     callback = function()
@@ -24,8 +16,21 @@ autocmd('BufReadPost', {
         if mark[1] > 0 and mark[1] <= line_count then pcall(vim.api.nvim_win_set_cursor, 0, mark) end
     end,
 })
-set_line_number_highlight()
 
-vim.api.nvim_create_autocmd('ColorScheme', {
-    callback = set_line_number_highlight,
+-- Flash yanked text and keep the cursor where the yank started (see `y` in keymaps.lua).
+local yank = augroup('yank-feedback', { clear = true })
+autocmd('TextYankPost', {
+    group = yank,
+    callback = function()
+        vim.hl.on_yank { timeout = 300 }
+        local cursor = vim.w.yank_cursor
+        vim.w.yank_cursor = nil
+        if cursor and vim.v.event.operator == 'y' then pcall(vim.api.nvim_win_set_cursor, 0, cursor) end
+    end,
+})
+-- A cancelled yank (`y<Esc>`) must not move the cursor on a later one.
+autocmd('ModeChanged', {
+    group = yank,
+    pattern = 'no*:*',
+    callback = function() vim.w.yank_cursor = nil end,
 })

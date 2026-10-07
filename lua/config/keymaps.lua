@@ -18,17 +18,24 @@ map('n', '<C-j>', '<C-w>j', { desc = 'Focus lower window' })
 map('n', '<C-k>', '<C-w>k', { desc = 'Focus upper window' })
 map('n', '<C-l>', '<C-w>l', { desc = 'Focus right window' })
 
+map('n', '<C-Up>', '<cmd>resize +2<cr>', { desc = 'Increase window height' })
 map('n', '<C-Down>', '<cmd>resize -2<cr>', { desc = 'Decrease window height' })
 map('n', '<C-Left>', '<cmd>vertical resize -2<cr>', { desc = 'Decrease window width' })
 map('n', '<C-Right>', '<cmd>vertical resize +2<cr>', { desc = 'Increase window width' })
 
 map('n', '<leader>bb', '<cmd>buffer #<cr>', { desc = 'Other buffer' })
 map('n', '<leader>bd', function() Snacks.bufdelete() end, { desc = 'Delete buffer' })
+map('n', '<leader>bo', function() Snacks.bufdelete.other() end, { desc = 'Delete other buffers' })
 
 map({ 'n', 'i', 'x', 's' }, '<C-s>', '<cmd>write<cr><Esc>', { desc = 'Save file' })
 map('n', '<leader>qq', '<cmd>qa<cr>', { desc = 'Quit all' })
 map('n', '<leader>qx', function() require('config.sessions').reset_to_starter() end, { desc = 'Close everything and open dashboard' })
 map('n', '<leader>qX', function() require('config.sessions').restart_to_starter() end, { desc = 'Reload Neovim and open dashboard' })
+map('n', '<leader>qs', function() require('config.sessions').restore_current() end, { desc = 'Restore current folder' })
+map('n', '<leader>qS', function() require('config.sessions').select() end, { desc = 'All folders' })
+map('n', '<leader>ql', function() require('config.sessions').restore_last() end, { desc = 'Open most recent folder' })
+map('n', '<leader>qd', function() require('config.sessions').detach() end, { desc = "Don't save current session" })
+map('n', '<leader>qD', function() require('config.sessions').delete_current() end, { desc = 'Delete current session' })
 
 map('n', '[d', function() vim.diagnostic.jump { count = -1, float = true } end, { desc = 'Previous diagnostic' })
 
@@ -58,12 +65,15 @@ map('i', '<C-c>', '<Esc>', {
     desc = 'Leave insert mode',
 })
 
--- Delete without overwriting registers
-map({ 'n', 'x' }, 'd', '"_d', {
-    desc = 'Delete without yanking',
-})
+-- Only yanking copies: deleting, changing and pasting over a selection leave
+-- the clipboard alone.
+for _, key in ipairs { 'd', 'D', 'c', 'C', 'x', 'X', '<Del>' } do
+    map({ 'n', 'x' }, key, '"_' .. key, { desc = (key:lower() == 'c' and 'Change' or 'Delete') .. ' without copying' })
+end
+map('x', 'p', 'P', { desc = 'Paste without copying selection' })
 
--- Change without overwriting registers
-map({ 'n', 'x' }, 'c', '"_c', {
-    desc = 'Change without yanking',
-})
+-- Remember where the yank started; the TextYankPost autocmd moves the cursor back.
+map({ 'n', 'x' }, 'y', function()
+    vim.w.yank_cursor = vim.api.nvim_win_get_cursor(0)
+    return 'y'
+end, { expr = true, desc = 'Yank' })

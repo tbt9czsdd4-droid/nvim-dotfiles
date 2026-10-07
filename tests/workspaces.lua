@@ -1,7 +1,7 @@
 -- Run with: nvim --headless -u NONE -i NONE -l tests/workspaces.lua
 vim.opt.rtp:prepend(vim.fn.getcwd())
-vim.opt.rtp:append(vim.fn.stdpath 'data' .. '/site/pack/core/opt/persistence.nvim')
 vim.opt.sessionoptions:remove 'blank'
+vim.opt.sessionoptions:append 'globals'
 local base = vim.fn.tempname()
 vim.fn.mkdir(base, 'p')
 local sessions = require 'config.sessions'
@@ -28,18 +28,14 @@ local function file(path, text)
 end
 local function edit(path) vim.cmd.edit(vim.fn.fnameescape(path)) end
 local function modify(text) vim.api.nvim_buf_set_lines(0, 0, -1, false, { text }) end
-local function snapshot(root, suffix) return base .. '/sessions/' .. root:gsub('[\\/:]+', '%%') .. (suffix or '') .. '.vim' end
+local function snapshot(root) return base .. '/sessions/' .. root:gsub('[\\/:]+', '%%') .. '.vim' end
 local a, b, nested = folder 'a', folder 'b', folder 'a/nested'
 local outside = file(base .. '/outside.txt')
 local afile, bfile = file(a .. '/a.txt'), file(b .. '/b.txt')
 sessions.setup { dir = base .. '/sessions/', history_file = base .. '/recent.json' }
-local seeded = folder 'seeded'
-file(snapshot(seeded, '%%old-branch'), 'let g:seeded_session = 1')
 local ok, err = xpcall(function()
-    equal(sessions.folders()[1].root, seeded)
+    equal(sessions.folders(), {})
     equal(sessions.owner(), nil)
-    assert(not require('persistence.config').options.branch)
-    equal(require('persistence.config').options.need, 0)
     equal(sessions.open_directory(a), 'created')
     equal(pickers[#pickers].cwd, a)
     equal(sessions.owner(), a)
@@ -65,15 +61,15 @@ local ok, err = xpcall(function()
     equal(sessions.open_directory(base .. '/alias'), 'loaded')
     equal(sessions.owner(), nested)
     equal(sessions.folders()[1].root, nested)
-    equal(#sessions.folders(), 4)
+    equal(#sessions.folders(), 3)
 
     -- Branch changes cannot change session identity.
     vim.fn.mkdir(a .. '/.git', 'p')
     file(a .. '/.git/HEAD', 'ref: refs/heads/topic')
     equal(sessions.open_directory(a), 'loaded')
-    local current = require('persistence').current()
-    file(a .. '/.git/HEAD', 'ref: refs/heads/other')
-    equal(require('persistence').current(), current)
+    assert(sessions.save())
+    equal(vim.v.this_session, snapshot(a))
+    equal(vim.fn.glob(base .. '/sessions/*topic*', true, true), {})
 
     -- Cancel, invalid destinations, write failure, and successful Save all.
     edit(afile)
@@ -128,15 +124,27 @@ local ok, err = xpcall(function()
 
     -- Failed snapshots preserve the previous snapshot, workspace, and edits.
     local saved = vim.fn.readfile(snapshot(a))
-    local save = require('persistence').save
-    require('persistence').save = function() error 'simulated disk failure' end
+    -- A directory where the temporary snapshot goes makes :mksession fail.
+    local blocker = snapshot(a) .. '.' .. vim.uv.os_getpid() .. '.tmp'
+    vim.fn.mkdir(blocker, 'p')
     edit(afile)
     modify 'keep on failure'
     assert(not sessions.open_directory(b))
     equal(sessions.owner(), a)
     assert(vim.bo.modified)
     equal(vim.fn.readfile(snapshot(a)), saved)
-    require('persistence').save = save
+    assert(notifications[#notifications]:find 'Cannot save workspace')
+    vim.fn.delete(blocker, 'd')
+    assert(sessions.open_directory(b))
+
+    -- Bufferline's tab order is saved per workspace and does not leak into others.
+    assert(sessions.open_directory(a))
+    local order = vim.json.encode { afile, outside }
+    vim.g.BufferlinePositions = order
+    assert(sessions.open_directory(b))
+    equal(vim.g.BufferlinePositions, nil)
+    assert(sessions.open_directory(a))
+    equal(vim.g.BufferlinePositions, order)
     assert(sessions.open_directory(b))
 
     -- Empty workspaces replace old file lists.
@@ -188,39 +196,7 @@ local ok, err = xpcall(function()
     assert(sessions.delete(b, { confirm = false }))
     equal(sessions.owner(), nil)
     equal(sessions.folders()[1].root, b)
-
-    -- Newest legacy branch wins once; later variants are ignored.
-    local legacy = folder 'legacy-project'
-    local canonical, branch = snapshot(legacy), snapshot(legacy, '%%topic')
-    file(canonical, 'let g:workspace_legacy = 1')
-    file(branch, 'let g:workspace_legacy = 2')
-    vim.uv.fs_utime(canonical, 1000, 1000)
-    vim.uv.fs_utime(branch, 2000, 2000)
-    assert(sessions.open_directory(legacy))
-    equal(vim.g.workspace_legacy, 2)
-    equal(vim.fn.filereadable(base .. '/sessions/legacy/' .. vim.fs.basename(canonical)), 1)
-    equal(vim.fn.filereadable(base .. '/sessions/legacy/' .. vim.fs.basename(branch)), 1)
-    assert(sessions.open_directory(a))
-    file(branch, 'let g:workspace_legacy = 3')
-    vim.g.workspace_legacy = 0
-    assert(sessions.open_directory(legacy))
-    equal(vim.g.workspace_legacy, 0)
-
-    -- Snapshots made before Grug-far became transient can list its old buffer
-    -- name as a missing file. Restore the real file without retaining that tab.
-    local old_grug = folder 'old-grug'
-    local keep = file(old_grug .. '/keep.txt')
-    assert(sessions.open_directory(old_grug))
-    edit(keep)
-    assert(sessions.open_directory(a))
-    local lines = vim.fn.readfile(snapshot(old_grug))
-    table.insert(lines, 1, 'badd +1 Grug\\ FAR\\ -\\ 1:\\ needle')
-    vim.fn.writefile(lines, snapshot(old_grug))
-    equal(sessions.open_directory(old_grug), 'loaded')
-    assert(vim.fn.bufnr(keep) > 0)
-    for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-        assert(not vim.api.nvim_buf_get_name(buf):find 'Grug FAR %- 1')
-    end
+    equal(vim.fn.filereadable(snapshot(b)), 0)
 
     -- Persistent command-line buffers must survive workspace replacement.
     local ui_buffer = vim.api.nvim_create_buf(false, true)
@@ -246,7 +222,6 @@ local ok, err = xpcall(function()
     file(snapshot(broken), 'this_is_not_a_command')
     assert(not sessions.open_directory(broken))
     equal(sessions.owner(), nil)
-    assert(not require('persistence').active())
     assert(notifications[#notifications]:find 'Cannot restore workspace')
     equal(vim.fn.readfile(snapshot(broken)), { 'this_is_not_a_command' })
     for _, item in ipairs(sessions.folders()) do

@@ -1,95 +1,28 @@
-# Neovim folder workspaces
+# Neovim config
 
-Open a folder with `nvim path/to/folder` to activate that exact folder and restore
-its files and window layout. Any folder works; Git branches and project markers
-do not affect session identity. Symlinks share the canonical folder's workspace.
-An empty workspace opens a file picker, and closing every file saves an empty
-session so old files do not return.
+A hybrid editor/IDE setup for Neovim 0.12+, with plugins managed by `vim.pack`.
+The leader key is Space.
 
-`nvim` opens the dashboard. File arguments, multiple arguments, and stdin start
-standalone, without automatic session loading or saving. `/` and your home folder
-also stay standalone. Search and project terminals use the active workspace folder,
-even for files outside it. Standalone search uses the current file's directory,
-then cwd. Language servers keep their own root detection.
+## Installation
 
-The dashboard has six actions: **Sessions**, **Open folder**, **Recent files**,
-**Config**, **Update plugins**, and **Quit**. Sessions lists previously opened
-folders. Press `o` or `O` on the dashboard for a floating **Open folder** dialog,
-prefilled with the current directory. Tab completes directory paths, including
-names with spaces. Up/Down or Ctrl-K/Ctrl-J move through completion suggestions;
-when completion is closed, they browse input history. Enter accepts an active
-completion; otherwise it opens the folder. Escape dismisses completion first,
-then cancels the dialog. Absolute
-paths, relative paths, and `~` are supported. Empty input cancels; nonexistent
-folders and ordinary files are rejected without switching workspaces.
-You can also use `nvim path/to/folder`, or `:cd path/to/folder` followed by
-`<leader>qs`. Dashboard Recent files opens a standalone file and changes cwd to
-its parent. File pickers used inside the editor add files to the current
-workspace. Mini.files (`<leader>e`) is the explorer; browsing does not switch
-workspaces. The former Snacks Explorer shortcut (`<leader>E`) has been removed.
+Requires Neovim **0.12 or newer** (checked against 0.12.5), Git, and ripgrep
+(14+ for replacement, 15+ recommended). `fd` speeds up file search. The terminal
+supplies the Nerd Font, including over SSH.
 
-Folder switches and returning to the dashboard offer **Save all / Discard /
-Cancel** when buffers are modified, with Cancel selected by default. Save all
-prompts for unnamed files; a cancelled prompt, failed write, or remaining modified
-buffer stops the transition. The outgoing session is saved before buffers are
-replaced. Restore errors are reported and disable automatic saving to protect the
-snapshot.
+The first launch installs the locked plugins. **Update plugins** on the dashboard
+runs `vim.pack.update()`; installed Treesitter parsers update along with it.
 
-| Shortcut | Action |
-| --- | --- |
-| `<leader>fp`, `<leader>qS` | All folders; `<C-d>` confirms forgetting a folder and its snapshots |
-| `<leader>ql` | Open the most recent existing folder |
-| `<leader>qs` | Explicitly open/restore the current directory |
-| `<leader>qx`, `<leader>qX` | Save workspace and open dashboard / restart |
-| `<leader>qd`, `<leader>qD` | Detach / delete current snapshots (history is retained) |
-| `<leader><space>`, `<leader>ff` | Workspace smart search / plain file search |
-| `<leader>/`, `<leader>sB` | Workspace grep / search open buffers, including unsaved text |
-| `<leader>sR` | Resume the last picker |
-| `<leader>ft` | Workspace terminal |
-| `<leader>bd` | Delete buffer while preserving splits |
-| `<leader>uf`, `<leader>uF` | Toggle global / buffer autoformat |
+Language servers, formatters, and parsers are installed explicitly; nothing is
+provisioned on startup. A supported language server starts when its executable is
+on `PATH`. Mason's bin directory comes first, so Mason, system, and rustup installs
+all work, and `:MasonInstall` starts a server without a restart. Mason packages may
+need Node/npm or Python (`:checkhealth mason`).
 
-The leader key is Space. Autoformat defaults off; a buffer override takes
-precedence over the global default. `:unlet b:autoformat` restores inheritance.
-Lualine shows the active folder or **Standalone**. Encoding and line-ending
-labels appear only when different from UTF-8 and Unix; the current theme, layout,
-progress, and per-buffer diagnostic badges are retained.
+Parsers need a C compiler, `curl`, `tar`, and Tree-sitter CLI 0.26.1+ (from the
+system package manager or Cargo, not npm). After `:TSInstall` for an already open
+file, reopen it with `:edit`.
 
-History lives in `stdpath('state')/recent-folders.json`, separately from
-`sessions/*.vim`. Existing snapshots seed history once. On the first open of each
-folder, the newest legacy snapshot (including branch variants) becomes its single
-session, with original copies preserved in `sessions/legacy/`. Later opens ignore
-legacy variants. Missing folders remain available for removal in **All folders…**.
-Snapshot deletion also removes legacy backups, but keeps folder history; forgetting
-removes both. Deleting an active snapshot detaches it until explicitly reopened.
-
-Use **Update plugins** for `vim.pack.update()`. Installed Treesitter parsers update
-along with the Treesitter plugin. Mini.files, animations, the experimental
-command/message UI, and Tab/tabout behavior are retained. The UI's existing
-fallback to the ordinary command line remains available when initialization fails.
-
-## Installation on another machine
-
-Use Neovim **0.12 or newer** (this config is checked against 0.12.5), Git, and
-ripgrep (14+ for replacement; 15+ recommended). `fd` improves file discovery.
-Your terminal supplies the Nerd Font, including when using SSH.
-
-The first launch installs the locked plugins. **Language servers, formatters, and
-parsers are installed explicitly**, with no automatic language provisioning on
-startup. Already installed tools continue working. A server is enabled when it
-is installed through Mason and belongs to this config's supported server list.
-
-Use `:Mason` to browse tools or `:MasonInstall` with package names. The optional
-`:MasonToolsInstall` batch installs clang-format, Ruff, shfmt, StyLua, and Prettier.
-Mason packages may require system runtimes such as Node/npm or Python; consult
-`:checkhealth mason` for that host. Rustfmt comes from the Rust toolchain.
-
-Parser compilation needs a C compiler, `curl`, `tar`, and Tree-sitter CLI 0.26.1+
-(installed through the system package manager or Cargo, not npm). Use `:TSInstall`
-with the parser names below. Installed parsers are picked up by normal buffers;
-after installing a parser for an already open file, reopen that file with `:edit`.
-
-| Work | Explicit server/formatter installation | Parser installation |
+| Work | Servers / formatters | Parsers |
 | --- | --- | --- |
 | Config/Lua | `:MasonInstall lua-language-server stylua` | `:TSInstall lua luadoc vim vimdoc query` |
 | Shell | `:MasonInstall bash-language-server shfmt` | `:TSInstall bash` |
@@ -101,70 +34,135 @@ after installing a parser for an already open file, reopen that file with `:edit
 | Build/containers | `:MasonInstall neocmakelsp dockerfile-language-server docker-compose-language-service` | `:TSInstall cmake dockerfile yaml` |
 | TeX/Typst/HDL | `:MasonInstall texlab tinymist` | `:TSInstall latex bibtex typst vhdl` |
 
-Prettier is optional for JS/JSX, TS/TSX, HTML, CSS/SCSS, JSON/JSONC, YAML, and
-Markdown. Conform prefers a project-local Prettier executable and otherwise uses
-one on PATH (including Mason). Existing formatting toggles still apply, with
-autoformat off by default. Rust retains Clippy checking with the project's default
-features. VHDL formatting requires a separately installed `vsg`.
+Formatting uses conform: Prettier (project-local first, then `PATH`) for web, data,
+and Markdown files; rustfmt from the Rust toolchain; `vsg` for VHDL (installed
+separately). Rust is checked with Clippy.
 
-## Editing improvements
+## Workspaces
 
-| Shortcut | Action / example |
+`nvim path/to/folder` opens that folder as a workspace and restores its files,
+window layout, and buffer tab order. Any folder works; Git branches do not affect
+the session, and symlinks share the real folder's workspace. An empty workspace
+opens a file picker.
+
+`nvim` opens the dashboard: **Sessions**, **Open folder**, **Recent files**,
+**Config**, **Update plugins**, **Quit**. `o`/`O` opens the folder dialog: Tab
+completes paths, Up/Down or Ctrl-J/Ctrl-K move through suggestions, Enter opens,
+Esc cancels. Relative paths and `~` work.
+
+File arguments, several arguments, stdin, `/` and the home folder start
+standalone, without a session. Dashboard **Recent files** opens a standalone file.
+Switching folders or returning to the dashboard offers **Save all / Discard /
+Cancel** when buffers are modified. A snapshot that fails to restore is reported
+and never overwritten.
+
+Search, Git views, and terminals use the workspace folder, even for files outside
+it; standalone they use the file's folder, then cwd. Lualine shows the workspace
+name or **Standalone**.
+
+| Shortcut | Action |
 | --- | --- |
-| `gsa`, `gsd`, `gsr` | Add/delete/replace surrounding: `gsaiw"` quotes a word; `gsr"'` changes double quotes to single quotes |
-| `gsf`, `gsF`, `gsh` | Find surrounding forward/backward or highlight it |
-| `cia`, `cif` | Change an argument or the inside of a function call |
-| `aN` / `iN`, `aL` / `iL` | Around/inside next or previous text object; native lowercase mappings stay available |
-| `<leader>sr` | Search and replace in the workspace; visual mode prefills the selected text |
-| `<leader>gs`, `<leader>gd` | Workspace Git status / diff |
-| `<leader>gl`, `<leader>gf` | Repository history / current-file history |
-| `[h`, `]h` | Previous / next diff hunk |
-| `gh`, `gH` | Stage / reset a motion or visual region |
-| `ghgh`, `gHgh` | Stage / reset the current hunk |
+| `<leader>fp`, `<leader>qS` | All folders; `<C-d>` forgets a folder and its snapshot |
+| `<leader>ql` | Open the most recent folder |
+| `<leader>qs` | Open/restore the current directory as a workspace |
+| `<leader>qx`, `<leader>qX` | Save and open the dashboard / restart |
+| `<leader>qd`, `<leader>qD` | Stop saving / delete the current snapshot |
 
-Git reset (`gH`) restores buffer text from the Git index, discarding those unstaged
-edits; ordinary undo can restore that buffer change. Git status also exposes the
-picker's own stage/restore actions. File history follows the current file even
-outside the active workspace.
+Snapshots live in `stdpath('state')/sessions/`, folder history in
+`stdpath('state')/recent-folders.json`.
 
-Files stay fully visible: automatic folding is disabled, including after restoring
-older sessions. Treesitter syntax highlighting remains enabled. Native Vim folding
-commands remain available if you deliberately enable manual folding.
+## Copy and paste
 
-Surround and text objects reuse Mini; Flash keeps `s` and incremental selection.
-Delete/change still preserve the last yank. As before, these mappings also
-prevent explicit-register cuts such as `"add`; use `y` to populate a register.
-Mini.files now informs supporting language servers about file operations, allowing
-imports to update after renames (with a bounded one-second request timeout).
-Whether imports update immediately or a confirmation appears depends on the
-language server and its settings.
+Only yanking copies. `d`, `D`, `c`, `C`, `x`, `X` and `Del` delete without
+touching the clipboard, and pasting over a selection keeps it. Yanks flash briefly
+and leave the cursor where it was.
 
-File search and grep both include hidden files, respect ignore rules, and exclude
-Git's internal directory. Open-buffer search includes unsaved text but skips
-buffers in big-file mode or larger than 5 MiB, reporting the number skipped.
+Over SSH, yanks reach your local clipboard through OSC 52, and `p` pastes the last
+yank from this Neovim. Paste text copied on your machine with the terminal's paste
+(usually Ctrl-Shift-V).
 
-Grug-far opens alongside the file (below it on narrow terminals). The Paths input
-shows the captured workspace or standalone search root. Edit the search and
-replacement to inspect the preview, then press `Esc`, followed by `Space` then `r`
-to replace. This shortcut applies only inside the search-and-replace window.
-For selective replacement, use `Down` / `Up` in normal mode to browse result
-lines without changing files. Press `Space n` to replace the current result line
-and move to the next. This replaces all matches on that line;
-`Space r` still replaces all results, including ones you skipped. The other
-letter commands use `Space R` followed by the letter in the help header:
-for example, `Space R c` closes the window and `Space R q` sends results to
-quickfix. Press `g?` for the complete list. Its windows are temporary, so they
-stay out of the normal buffer list and do not return with saved sessions.
-Opening the interface does not save or replace anything. Project replacement
-operates on files on disk; save or discard edits in affected buffers first.
-A small upstream hook blocks replacement/sync of modified file buffers. Review
-errors in the replacement results before retrying. Searches respect ignore rules
-and include hidden files, while excluding `.git`.
+## Keys
+
+Pressing `<leader>`, `[`, `]`, `g`, `z`, `<C-w>`, `'`, `` ` ``, `"` or `<C-r>` and
+pausing shows the available follow-up keys.
+
+**Buffers and windows**
+
+| Shortcut | Action |
+| --- | --- |
+| `<S-h>`, `<S-l>` (`[b`, `]b`) | Previous / next buffer |
+| `<M-H>`, `<M-L>` (`[B`, `]B`) | Move buffer tab left / right (Alt+Shift+h/l) |
+| `<leader>bb`, `<leader>bj` | Other buffer / pick buffer |
+| `<leader>bd`, `<leader>bo` | Delete buffer (keeps splits) / delete other buffers |
+| `<leader>bp`, `<leader>bP` | Pin buffer / delete unpinned buffers |
+| `<leader>bl`, `<leader>br` | Delete buffers to the left / right |
+| `<C-h/j/k/l>`, `<C-arrows>` | Move between / resize windows |
+| `<leader>e` | File explorer (mini.files) |
+| `<leader>ft`, `<leader>fT` | Terminal in workspace / cwd |
+
+**Search**
+
+| Shortcut | Action |
+| --- | --- |
+| `<leader><space>`, `<leader>ff`, `<leader>fF` | Smart search / files (workspace) / files (cwd) |
+| `<leader>fr`, `<leader>fR`, `<leader>fc`, `<leader>fg` | Recent (workspace) / recent (all) / config / Git files |
+| `<leader>/`, `<leader>sg`, `<leader>sG` | Grep workspace / grep cwd |
+| `<leader>sw`, `<leader>st` | Grep word or selection / TODO, FIXME, HACK, NOTE |
+| `<leader>sB`, `<leader>sb` | Grep open buffers (including unsaved text) / current buffer |
+| `<leader>sr` | Search and replace in the workspace |
+| `<leader>sR` | Resume the last picker |
+| `<leader>sd`, `<leader>sD`, `<leader>ss`, `<leader>sS` | Diagnostics / buffer diagnostics / symbols / workspace symbols |
+| `<leader>sk`, `<leader>sh`, `<leader>su`, `<leader>s"` | Keymaps / help / undo history / registers |
+
+File search and grep include hidden files, respect ignore rules, and skip `.git`.
+Buffer grep skips files over 5 MiB.
+
+**Code and Git**
+
+| Shortcut | Action |
+| --- | --- |
+| `gd`, `grr`, `gI`, `gy`, `gD`, `K` | Definition / references / implementation / type / declaration / hover |
+| `<leader>ca`, `<leader>cr`, `<leader>cf` | Code action / rename / format |
+| `<leader>cd`, `[d`, `]d` | Line diagnostics / previous / next |
+| `<leader>gs`, `<leader>gd` | Git status / diff (workspace) |
+| `<leader>gl`, `<leader>gf` | Repository / current-file history |
+| `[h`, `]h`, `gh`, `gH` | Previous / next hunk; stage / reset a motion (`ghgh`, `gHgh` for a hunk) |
+| `<leader>uf`, `<leader>uF` | Toggle global / buffer autoformat (off by default; `:unlet b:autoformat` restores the global) |
+| `<leader>ud`, `<leader>uh` | Toggle diff overlay / inlay hints |
+
+**Editing**
+
+| Shortcut | Action |
+| --- | --- |
+| `gsa`, `gsd`, `gsr` | Add / delete / replace surrounding (`gsaiw"`, `gsr"'`) |
+| `gsf`, `gsF`, `gsh` | Find surrounding forward / backward / highlight |
+| `cia`, `cif`; `aN`/`iN`, `aL`/`iL` | Argument and function-call text objects; next / previous object |
+| `s`, `S`, `<C-Space>` | Flash jump / Treesitter jump / incremental selection |
+| `<M-h/j/k/l>` | Move line or selection |
+| `<Tab>` | Snippet jump, otherwise tab out of brackets |
+
+TODO/FIXME/HACK/NOTE and hex colors are highlighted. Folding is disabled.
+Renaming files in mini.files tells supporting language servers, so imports can
+update.
+
+## Search and replace
+
+`<leader>sr` opens grug-far beside the file (below on narrow terminals), with the
+workspace folder as path; in visual mode the selection becomes the search. Edit
+the search and replacement, press `Esc`, then:
+
+- `<leader>r` replaces all results;
+- `<leader>n` replaces the current result line and moves to the next;
+- `<leader>R` plus the letter from the help header runs the other commands
+  (`<leader>Rc` closes, `<leader>Rq` sends results to quickfix); `g?` lists them.
+
+Replacement edits files on disk and refuses files with unsaved changes in a
+buffer; save or discard them first. Its windows are not saved in sessions.
 
 ## Validation
 
-Run the isolated checks from this directory (installed plugins required;
-the refinement suite also uses the TypeScript parser and Git):
+Run from this directory (installed plugins required; the refinement suite also
+uses the TypeScript parser and Git):
 
 ```sh
 nvim --headless -u NONE -i NONE -l tests/workspaces.lua
@@ -173,8 +171,6 @@ nvim --headless -u NONE -i NONE -l tests/refinements.lua
 nvim --headless -u NONE -i NONE -l tests/ui.lua
 ```
 
-The checks use temporary history and snapshots; the full startup suite also uses
-temporary cache and logs while loading the installed plugins.
-The UI suite attaches real wide/narrow UIs, simulates SSH and an unprovisioned
-host, and prints the location of its text screen captures. It does not measure
-latency over a real SSH connection.
+The suites use temporary state and files, so your sessions are never touched. The
+UI suite attaches real wide and narrow UIs, simulates SSH and a fresh host, and
+prints where its screen captures are.

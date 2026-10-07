@@ -1,21 +1,23 @@
+-- Supported servers and their executables. A server is enabled once its
+-- executable is on PATH; Mason's bin directory comes first.
 local servers = {
-    'angularls',
-    'bashls',
-    'clangd',
-    'docker_compose_language_service',
-    'dockerls',
-    'jsonls',
-    'lua_ls',
-    'markdown_oxide',
-    'neocmake',
-    'pyright',
-    'ruff',
-    'rust_analyzer',
-    'taplo',
-    'texlab',
-    'tinymist',
-    'vtsls',
-    'yamlls',
+    angularls = 'ngserver',
+    bashls = 'bash-language-server',
+    clangd = 'clangd',
+    docker_compose_language_service = 'docker-compose-langserver',
+    dockerls = 'docker-langserver',
+    jsonls = 'vscode-json-language-server',
+    lua_ls = 'lua-language-server',
+    markdown_oxide = 'markdown-oxide',
+    neocmake = 'neocmakelsp',
+    pyright = 'pyright-langserver',
+    ruff = 'ruff',
+    rust_analyzer = 'rust-analyzer',
+    taplo = 'taplo',
+    texlab = 'texlab',
+    tinymist = 'tinymist',
+    vtsls = 'vtsls',
+    yamlls = 'yaml-language-server',
 }
 
 local capabilities = require('blink.cmp').get_lsp_capabilities()
@@ -77,7 +79,6 @@ vim.lsp.config('rust_analyzer', {
 vim.diagnostic.config {
     severity_sort = true,
     float = {
-        border = 'rounded',
         source = 'if_many',
     },
     signs = true,
@@ -105,7 +106,6 @@ vim.api.nvim_create_autocmd('LspAttach', {
         map('gI', function() Snacks.picker.lsp_implementations() end, 'Goto implementation')
         map('gy', function() Snacks.picker.lsp_type_definitions() end, 'Goto type definition')
         map('gD', vim.lsp.buf.declaration, 'Goto declaration')
-        map('K', vim.lsp.buf.hover, 'Hover documentation')
         map('<leader>ca', vim.lsp.buf.code_action, 'Code action', { 'n', 'x' })
         map('<leader>cr', vim.lsp.buf.rename, 'Rename')
         map('<leader>ss', function() Snacks.picker.lsp_symbols() end, 'Document symbols')
@@ -121,7 +121,12 @@ vim.api.nvim_create_autocmd('LspAttach', {
     end,
 })
 
-require('mason-lspconfig').setup {
-    ensure_installed = {},
-    automatic_enable = servers,
-}
+local function enable_available()
+    for server, executable in pairs(servers) do
+        if not vim.lsp.is_enabled(server) and vim.fn.executable(executable) == 1 then vim.lsp.enable(server) end
+    end
+end
+
+enable_available()
+-- Servers installed with :MasonInstall start without a restart.
+require('mason-registry'):on('package:install:success', vim.schedule_wrap(enable_available))
