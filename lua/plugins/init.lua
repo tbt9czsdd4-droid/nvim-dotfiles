@@ -1,6 +1,6 @@
--- Cyberdream stays configured for `:colorscheme cyberdream`; mini.hues is the active theme.
+-- Cyberdream stays configured for `:colorscheme cyberdream`; plugins.theme picks the active theme.
 require 'plugins.cyberdream'
-require 'plugins.hues'
+require 'plugins.theme'
 
 require 'plugins.snacks'
 require 'plugins.grug-far'

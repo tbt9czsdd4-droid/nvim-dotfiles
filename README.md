@@ -9,8 +9,9 @@ Requires Neovim **0.12 or newer** (checked against 0.12.5), Git, and ripgrep
 (14+ for replacement, 15+ recommended). `fd` speeds up file search. The terminal
 supplies the Nerd Font, including over SSH.
 
-The theme is mini.hues with Neovim's default colors: transparent locally, opaque
-over SSH. `:colorscheme cyberdream` still works.
+Locally the theme is `vim-modern` (softened classic Vim colors, transparent);
+over SSH it is Vim's built-in `vim` scheme with fixes for the plugins.
+`:colorscheme cyberdream` still works.
 
 The first launch installs the locked plugins. **Update plugins** on the dashboard
 runs `vim.pack.update()`; installed Treesitter parsers update along with it.
