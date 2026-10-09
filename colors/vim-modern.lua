@@ -177,4 +177,8 @@ hi('FlashCurrent',  { fg = c.dark, bg = c.orange })
 hi('FlashBackdrop', { fg = c.grey4 })
 hi('SnacksIndent',      { fg = '#303030' })
 hi('SnacksIndentScope', { fg = c.grey4 })
+hi('TreesitterContext',                 { bg = c.grey1 })
+hi('TreesitterContextLineNumber',       { fg = c.grey4, bg = c.grey1 })
+hi('TreesitterContextBottom',           { underline = true, sp = c.grey3 })
+hi('TreesitterContextLineNumberBottom', { underline = true, sp = c.grey3 })
 --stylua: ignore end

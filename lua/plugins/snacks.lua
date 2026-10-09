@@ -21,13 +21,6 @@ require('snacks').setup {
     scope = {
         enabled = true,
     },
-    terminal = {
-        win = {
-            position = 'bottom',
-            border = 'top',
-            height = 0.3,
-        },
-    },
 }
 
 vim.api.nvim_create_autocmd('FileType', {
@@ -150,9 +143,24 @@ map('n', '<leader>sk', function() Snacks.picker.keymaps() end, { desc = 'Keymaps
 map('n', '<leader>sm', function() Snacks.picker.marks() end, { desc = 'Marks' })
 map('n', '<leader>su', function() Snacks.picker.undo() end, { desc = 'Undo history' })
 map('n', '<leader>?', function() Snacks.picker.keymaps { global = false } end, { desc = 'Buffer-local keymaps' })
-map('n', '<leader>ft', function() Snacks.terminal.toggle(nil, { cwd = project_root() }) end, { desc = 'Terminal (project root)' })
-map('n', '<leader>fT', function() Snacks.terminal.toggle(nil, { cwd = vim.uv.cwd() }) end, { desc = 'Terminal (cwd)' })
+-- Only these shells are bottom splits; lazygit and blame keep their floats.
+local terminal_win = { position = 'bottom', border = 'top', height = 0.3 }
+map('n', '<leader>ft', function() Snacks.terminal.toggle(nil, { cwd = project_root(), win = terminal_win }) end, { desc = 'Terminal (project root)' })
+map('n', '<leader>fT', function() Snacks.terminal.toggle(nil, { cwd = vim.uv.cwd(), win = terminal_win }) end, { desc = 'Terminal (cwd)' })
 map('n', '<leader>gs', function() Snacks.picker.git_status { cwd = project_root() } end, { desc = 'Git status (workspace)' })
 map('n', '<leader>gd', function() Snacks.picker.git_diff { cwd = project_root() } end, { desc = 'Git diff (workspace)' })
 map('n', '<leader>gl', function() Snacks.picker.git_log { cwd = project_root() } end, { desc = 'Git history (workspace)' })
 map('n', '<leader>gf', function() Snacks.picker.git_log_file() end, { desc = 'Git history (current file)' })
+map('n', '<leader>gg', function() Snacks.lazygit { cwd = project_root() } end, { desc = 'Lazygit (workspace)' })
+map('n', '<leader>gb', function() Snacks.git.blame_line() end, { desc = 'Blame line' })
+map({ 'n', 'x' }, '<leader>gB', function()
+    Snacks.gitbrowse {
+        what = 'permalink',
+        -- Over SSH a browser would open on the remote host; copy the link instead.
+        notify = not vim.g.is_ssh,
+        open = vim.g.is_ssh and function(url)
+            vim.fn.setreg('+', url)
+            vim.notify('Copied ' .. url)
+        end or nil,
+    }
+end, { desc = 'Git permalink (copied over SSH)' })

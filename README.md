@@ -6,7 +6,8 @@ The leader key is Space.
 ## Installation
 
 Requires Neovim **0.12 or newer** (checked against 0.12.5), Git, and ripgrep
-(14+ for replacement, 15+ recommended). `fd` speeds up file search. The terminal
+(14+ for replacement, 15+ recommended). `fd` speeds up file search; `<leader>gg`
+needs lazygit. The terminal
 supplies the Nerd Font, including over SSH.
 
 Locally the theme is `vim-modern` (softened classic Vim colors, transparent);
@@ -130,6 +131,8 @@ Buffer grep skips files over 5 MiB.
 | `<leader>cd`, `[d`, `]d` | Line diagnostics / previous / next |
 | `<leader>gs`, `<leader>gd` | Git status / diff (workspace) |
 | `<leader>gl`, `<leader>gf` | Repository / current-file history |
+| `<leader>gg`, `<leader>gb`, `<leader>gB` | Lazygit / blame line / permalink to the line or selection (copied to the clipboard over SSH) |
+| `[x` | Jump to the pinned function/class header |
 | `[h`, `]h`, `gh`, `gH` | Previous / next hunk; stage / reset a motion (`ghgh`, `gHgh` for a hunk) |
 | `<leader>uf`, `<leader>uF` | Toggle global / buffer autoformat (off by default; `:unlet b:autoformat` restores the global) |
 | `<leader>ud`, `<leader>uh` | Toggle diff overlay / inlay hints |
@@ -146,6 +149,7 @@ Buffer grep skips files over 5 MiB.
 | `<Tab>` | Snippet jump, otherwise tab out of brackets |
 
 TODO/FIXME/HACK/NOTE and hex colors are highlighted. Folding is disabled.
+Up to three enclosing function/class headers stay pinned at the top while scrolling.
 Renaming files in mini.files tells supporting language servers, so imports can
 update.
 

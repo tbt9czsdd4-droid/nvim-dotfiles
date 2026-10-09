@@ -23,6 +23,7 @@ vim.pack.add {
     { src = 'https://github.com/neovim/nvim-lspconfig' },
     { src = 'https://github.com/abecodes/tabout.nvim' },
     { src = 'https://github.com/nvim-treesitter/nvim-treesitter', version = 'main' },
+    { src = 'https://github.com/nvim-treesitter/nvim-treesitter-context' },
     { src = 'https://github.com/folke/snacks.nvim' },
     { src = 'https://github.com/MagicDuck/grug-far.nvim' },
 }
