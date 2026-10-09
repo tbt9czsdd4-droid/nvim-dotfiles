@@ -9,6 +9,9 @@ Requires Neovim **0.12 or newer** (checked against 0.12.5), Git, and ripgrep
 (14+ for replacement, 15+ recommended). `fd` speeds up file search. The terminal
 supplies the Nerd Font, including over SSH.
 
+The theme is mini.hues with Neovim's default colors: transparent locally, opaque
+over SSH. `:colorscheme cyberdream` still works.
+
 The first launch installs the locked plugins. **Update plugins** on the dashboard
 runs `vim.pack.update()`; installed Treesitter parsers update along with it.
 
@@ -65,7 +68,7 @@ name or **Standalone**.
 | `<leader>fp`, `<leader>qS` | All folders; `<C-d>` forgets a folder and its snapshot |
 | `<leader>ql` | Open the most recent folder |
 | `<leader>qs` | Open/restore the current directory as a workspace |
-| `<leader>qx`, `<leader>qX` | Save and open the dashboard / restart |
+| `<leader>qx`, `<leader>qX` | Save and open the dashboard / restart Neovim into it (reloads config and theme) |
 | `<leader>qd`, `<leader>qD` | Stop saving / delete the current snapshot |
 
 Snapshots live in `stdpath('state')/sessions/`, folder history in

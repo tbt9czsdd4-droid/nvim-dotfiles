@@ -25,8 +25,6 @@ opt.listchars = {
 }
 
 opt.foldenable = false
-opt.foldmethod = 'manual'
-opt.foldexpr = '0'
 opt.sessionoptions:remove { 'blank', 'folds' }
 -- Saves g:BufferlinePositions, so reordered buffer tabs survive a workspace switch.
 opt.sessionoptions:append 'globals'

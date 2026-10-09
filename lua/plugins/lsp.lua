@@ -20,12 +20,6 @@ local servers = {
     yamlls = 'yaml-language-server',
 }
 
-local capabilities = require('blink.cmp').get_lsp_capabilities()
-
-vim.lsp.config('*', {
-    capabilities = capabilities,
-})
-
 vim.lsp.config('markdown_oxide', {
     on_init = function(client)
         local operations = vim.tbl_get(client.server_capabilities, 'workspace', 'fileOperations')

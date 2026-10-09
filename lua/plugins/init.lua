@@ -1,7 +1,6 @@
+-- Cyberdream stays configured for `:colorscheme cyberdream`; mini.hues is the active theme.
 require 'plugins.cyberdream'
-
--- load colorscheme
-vim.cmd.colorscheme 'cyberdream'
+require 'plugins.hues'
 
 require 'plugins.snacks'
 require 'plugins.grug-far'

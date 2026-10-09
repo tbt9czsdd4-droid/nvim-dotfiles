@@ -351,15 +351,19 @@ function M.setup(opts)
     vim.api.nvim_create_autocmd('VimLeavePre', { group = group, callback = function() M.save() end })
     vim.api.nvim_create_autocmd('StdinReadPre', { group = group, callback = function() stdin = true end })
     local directory
+    -- `:restart!` (<leader>qX) reuses the original arguments; it should still open the dashboard.
+    local restarted = vim.v.startreason == 'restart!'
     local no_arguments = vim.fn.argc() == 0
-    if vim.fn.argc() == 1 and vim.fn.isdirectory(vim.fn.argv(0)) == 1 then directory = normalize(vim.fn.argv(0)) end
+    if not restarted and vim.fn.argc() == 1 and vim.fn.isdirectory(vim.fn.argv(0)) == 1 then directory = normalize(vim.fn.argv(0)) end
     vim.api.nvim_create_autocmd('VimEnter', {
         group = group,
         once = true,
         callback = function()
             vim.schedule(function()
                 if stdin then return end
-                if directory then
+                if restarted then
+                    M.reset_to_starter()
+                elseif directory then
                     M.open_directory(directory)
                 elseif no_arguments then
                     require('mini.starter').open()
