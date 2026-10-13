@@ -147,6 +147,7 @@ Buffer grep skips files over 5 MiB.
 | `s`, `S`, `<C-Space>` | Flash jump / Treesitter jump / incremental selection |
 | `<M-h/j/k/l>` | Move line or selection |
 | `<Tab>` | Snippet jump, otherwise tab out of brackets |
+| `<C-j>`, `<C-k>` (also `<C-n>`/`<C-p>`, Up/Down) | Next / previous completion; `<C-k>` toggles signature help when the menu is closed |
 
 TODO/FIXME/HACK/NOTE and hex colors are highlighted. Folding is disabled.
 Up to three enclosing function/class headers stay pinned at the top while scrolling.

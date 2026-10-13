@@ -1,6 +1,9 @@
 require('blink.cmp').setup {
     keymap = {
         preset = 'enter',
+        ['<C-j>'] = { 'select_next', 'fallback_to_mappings' },
+        -- With the menu closed, <C-k> keeps the preset's signature help toggle.
+        ['<C-k>'] = { 'select_prev', 'show_signature', 'hide_signature', 'fallback' },
     },
     appearance = {
         nerd_font_variant = 'mono',
