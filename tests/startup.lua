@@ -39,7 +39,8 @@ local ok, err = xpcall(function()
     equal(lua 'return require("config.sessions").owner()', vim.NIL)
     equal(lua 'return vim.bo.filetype', 'ministarter')
     local items = lua 'return vim.tbl_map(function(x) return x.name end, MiniStarter.content_to_items(MiniStarter.get_content()))'
-    equal(items, { 'Sessions', 'Open folder', 'Recent files', 'Config', 'Update plugins', 'Quit' })
+    equal(items, { 'Sessions', 'Open folder', 'Recent files', 'Config', 'Update plugins', 'Lockfile sync', 'Quit' })
+    equal(lua 'return vim.fn.exists(":LockfileSync")', 2)
     stop()
 
     start { folder }

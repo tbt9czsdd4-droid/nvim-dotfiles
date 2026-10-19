@@ -27,3 +27,15 @@ vim.pack.add {
     { src = 'https://github.com/folke/snacks.nvim' },
     { src = 'https://github.com/MagicDuck/grug-far.nvim' },
 }
+
+-- Update plugins on one machine and commit the lockfile. Elsewhere, pull and
+-- run this: plugins move to the locked revisions, and those the config no
+-- longer adds are removed.
+vim.api.nvim_create_user_command('LockfileSync', function()
+    local stale = vim.iter(vim.pack.get(nil, { info = false }))
+        :filter(function(plugin) return not plugin.active end)
+        :map(function(plugin) return plugin.spec.name end)
+        :totable()
+    if #stale > 0 then vim.pack.del(stale) end
+    vim.pack.update(nil, { target = 'lockfile' })
+end, { desc = 'Match installed plugins to the lockfile' })

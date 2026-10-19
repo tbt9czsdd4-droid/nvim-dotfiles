@@ -106,6 +106,11 @@ local function start(name, width, ssh, fresh)
     end
     local command = { 'nvim', '--embed', '-i', 'NONE', '-u', config .. '/init.lua' }
     if not ssh then vim.list_extend(command, { '--cmd', 'lua vim.env.SSH_CONNECTION=nil; vim.env.SSH_TTY=nil' }) end
+    -- Record the parsers a new host would install instead of building them.
+    if fresh then
+        local install = 'function(languages) _G.installing_parsers = languages; return { await = function() end } end'
+        vim.list_extend(command, { '--cmd', "lua package.loaded['nvim-treesitter.install'] = { install = " .. install .. ' }' })
+    end
     local environment = {}
     for key, value in pairs(vim.tbl_extend('force', vim.fn.environ(), env)) do
         environment[#environment + 1] = key .. '=' .. value
@@ -121,7 +126,7 @@ local function start(name, width, ssh, fresh)
     end))
     rpc('nvim_ui_attach', { width, 40, { rgb = true, ext_linegrid = true } })
     wait(function() return lua [=[return vim.bo.filetype == 'ministarter']=] end, 'Dashboard did not open')
-    assert(lua [=[return #MiniStarter.content_to_items(MiniStarter.get_content()) == 6]=])
+    assert(lua [=[return #MiniStarter.content_to_items(MiniStarter.get_content()) == 7]=])
     snapshot(name .. '-dashboard')
 end
 local ok, err = xpcall(function()
@@ -271,8 +276,11 @@ local ok, err = xpcall(function()
         stop()
     end
 
-    -- New host: plugins are present, but there are no Mason packages or user parsers.
+    -- New host: plugins are present and the README's parsers are queued for
+    -- installation, but there are no Mason packages or parsers yet.
     start('fresh', 80, false, true)
+    wait(function() return lua [=[return _G.installing_parsers ~= nil]=] end, 'Parsers were not queued for installation')
+    assert(lua [=[return #_G.installing_parsers == 29 and vim.list_contains(_G.installing_parsers, 'typescript')]=])
     lua [=[vim.cmd.enew(); vim.bo.filetype='typescript']=]
     assert(lua [=[return not vim.treesitter.highlighter.active[vim.api.nvim_get_current_buf()]]=])
     assert(lua [=[return #require('mason-registry').get_installed_package_names() == 0]=])

@@ -18,27 +18,34 @@ grey and the cursorline is dark. `:colorscheme cyberdream` still works.
 The first launch installs the locked plugins. **Update plugins** on the dashboard
 runs `vim.pack.update()`; installed Treesitter parsers update along with it.
 
-Language servers, formatters, and parsers are installed explicitly; nothing is
+To keep several machines alike, update plugins on one of them and commit
+`nvim-pack-lock.json`. On the others, pull and run **Lockfile sync** on the
+dashboard (`:LockfileSync`) to move plugins to the locked versions (confirm with
+`:w`) and remove plugins the config no longer uses.
+
+The first launch also installs the parsers from the table below in the background,
+and opened files get Treesitter highlighting when they finish. This needs a C
+compiler, `curl`, `tar`, and Tree-sitter CLI 0.26.1+ (from the system package
+manager or Cargo, not npm); without them files keep Vim's syntax highlighting.
+After a later `:TSInstall` for an already open file, reopen it with `:edit`.
+
+Language servers and formatters are installed explicitly; nothing else is
 provisioned on startup. A supported language server starts when its executable is
 on `PATH`. Mason's bin directory comes first, so Mason, system, and rustup installs
 all work, and `:MasonInstall` starts a server without a restart. Mason packages may
 need Node/npm or Python (`:checkhealth mason`).
 
-Parsers need a C compiler, `curl`, `tar`, and Tree-sitter CLI 0.26.1+ (from the
-system package manager or Cargo, not npm). After `:TSInstall` for an already open
-file, reopen it with `:edit`.
-
-| Work | Servers / formatters | Parsers |
+| Work | Servers / formatters | Parsers (automatic) |
 | --- | --- | --- |
-| Config/Lua | `:MasonInstall lua-language-server stylua` | `:TSInstall lua luadoc vim vimdoc query` |
-| Shell | `:MasonInstall bash-language-server shfmt` | `:TSInstall bash` |
-| C/C++ | `:MasonInstall clangd clang-format` | `:TSInstall c cpp` |
-| Python | `:MasonInstall pyright ruff` | `:TSInstall python` |
-| Rust | `:MasonInstall rust-analyzer` | `:TSInstall rust` |
-| Web | `:MasonInstall vtsls angular-language-server prettier` | `:TSInstall javascript jsdoc typescript tsx html angular css scss` |
-| Data/Markdown | `:MasonInstall json-lsp yaml-language-server taplo markdown-oxide prettier` | `:TSInstall json yaml toml markdown markdown_inline` |
-| Build/containers | `:MasonInstall neocmakelsp dockerfile-language-server docker-compose-language-service` | `:TSInstall cmake dockerfile yaml` |
-| TeX/Typst/HDL | `:MasonInstall texlab tinymist` | `:TSInstall latex bibtex typst vhdl` |
+| Config/Lua | `:MasonInstall lua-language-server stylua` | lua luadoc vim vimdoc query |
+| Shell | `:MasonInstall bash-language-server shfmt` | bash |
+| C/C++ | `:MasonInstall clangd clang-format` | c cpp |
+| Python | `:MasonInstall pyright ruff` | python |
+| Rust | `:MasonInstall rust-analyzer` | rust |
+| Web | `:MasonInstall vtsls angular-language-server prettier` | javascript jsdoc typescript tsx html angular css scss |
+| Data/Markdown | `:MasonInstall json-lsp yaml-language-server taplo markdown-oxide prettier` | json yaml toml markdown markdown_inline |
+| Build/containers | `:MasonInstall neocmakelsp dockerfile-language-server docker-compose-language-service` | cmake dockerfile yaml |
+| TeX/Typst/HDL | `:MasonInstall texlab tinymist` | latex bibtex typst vhdl |
 
 Formatting uses conform: Prettier (project-local first, then `PATH`) for web, data,
 and Markdown files; rustfmt from the Rust toolchain; `vsg` for VHDL (installed
@@ -52,7 +59,7 @@ the session, and symlinks share the real folder's workspace. An empty workspace
 opens a file picker.
 
 `nvim` opens the dashboard: **Sessions**, **Open folder**, **Recent files**,
-**Config**, **Update plugins**, **Quit**. `o`/`O` opens the folder dialog: Tab
+**Config**, **Update plugins**, **Lockfile sync**, **Quit**. `o`/`O` opens the folder dialog: Tab
 completes paths, Up/Down or Ctrl-J/Ctrl-K move through suggestions, Enter opens,
 Esc cancels. Relative paths and `~` work.
 

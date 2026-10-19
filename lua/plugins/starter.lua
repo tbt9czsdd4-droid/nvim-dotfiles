@@ -21,6 +21,7 @@ starter.setup {
         { name = 'Recent files', section = 'Actions', action = sessions.recent_files },
         { name = 'Config', section = 'Actions', action = function() sessions.open_directory(vim.fn.stdpath 'config') end },
         { name = 'Update plugins', section = 'Actions', action = function() vim.pack.update() end },
+        { name = 'Lockfile sync', section = 'Actions', action = 'LockfileSync' },
         { name = 'Quit', section = 'Actions', action = 'qall' },
     },
 
