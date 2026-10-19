@@ -28,6 +28,9 @@ hi('SignColumn',   { fg = 'Cyan' })
 hi('FoldColumn',   { fg = 'Cyan' })
 -- Neovim combines every tab bar segment with the reversed TabLineFill.
 hi('TabLineFill',  {})
+-- Terminal windows would show light green behind lualine's transparent middle.
+hi('StatusLineTerm',   { link = 'StatusLine' })
+hi('StatusLineTermNC', { link = 'StatusLineNC' })
 -- NonText is pure blue, too dark for text that has to be read.
 hi('LspInlayHint', { fg = 'Grey' })
 
