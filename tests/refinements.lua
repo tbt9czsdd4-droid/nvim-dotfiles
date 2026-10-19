@@ -112,6 +112,10 @@ local ok, err = xpcall(function()
     equal(vim.fn.maparg('p', 'x'), 'P')
     equal(vim.fn.maparg('<M-H>', 'n'), '<Cmd>BufferLineMovePrev<CR>')
     equal(vim.fn.maparg('<M-L>', 'n'), '<Cmd>BufferLineMoveNext<CR>')
+    -- blink.cmp maps insert keys per buffer on InsertEnter.
+    keys 'i<Esc>'
+    equal(vim.fn.maparg('<C-j>', 'i', false, true).desc, 'blink.cmp: Select Next')
+    equal(vim.fn.maparg('<C-k>', 'i', false, true).desc, 'blink.cmp: Select Prev, Show Signature, Hide Signature')
 
     -- Only yanking copies, and the cursor stays where the yank started. The
     -- system clipboard is switched off so the test cannot overwrite it.
