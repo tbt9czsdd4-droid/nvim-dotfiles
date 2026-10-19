@@ -10,9 +10,10 @@ Requires Neovim **0.12 or newer** (checked against 0.12.5), Git, and ripgrep
 needs lazygit. The terminal
 supplies the Nerd Font, including over SSH.
 
-Locally the theme is `vim-modern` (softened classic Vim colors, transparent);
-over SSH it is Vim's built-in `vim` scheme with fixes for the plugins.
-`:colorscheme cyberdream` still works.
+The theme is `vim-classic`, locally and over SSH: Vim's default colors on the
+terminal's (possibly transparent) background, with floating windows and pickers
+left transparent. Variables, brackets and operators stay plain, line numbers are
+grey and the cursorline is dark. `:colorscheme cyberdream` still works.
 
 The first launch installs the locked plugins. **Update plugins** on the dashboard
 runs `vim.pack.update()`; installed Treesitter parsers update along with it.

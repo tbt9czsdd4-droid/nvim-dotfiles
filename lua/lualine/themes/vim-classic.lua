@@ -1,15 +1,15 @@
--- Lualine's 'auto' theme loads this for `:colorscheme vim-modern`.
+-- Lualine's 'auto' theme loads this for `:colorscheme vim-classic`.
 -- Colors come from the active highlight groups, so the palette lives in one place.
 local function color(group, attr)
     local value = vim.api.nvim_get_hl(0, { name = group, link = false })[attr]
     return value and ('#%06x'):format(value) or 'NONE'
 end
 
-local fg, dim, panel = color('Normal', 'fg'), color('StatusLineNC', 'fg'), color('CursorLine', 'bg')
+local fg, dim, panel = color('Normal', 'fg'), color('FloatBorder', 'fg'), color('Visual', 'bg')
 
 local function mode(group)
     return {
-        a = { fg = '#121212', bg = color(group, 'fg'), gui = 'bold' },
+        a = { fg = '#000000', bg = color(group, 'fg'), gui = 'bold' },
         b = { fg = fg, bg = panel },
         c = { fg = fg, bg = 'NONE' },
     }
@@ -19,9 +19,9 @@ return {
     normal = mode 'Comment',
     insert = mode 'Type',
     visual = mode 'PreProc',
-    replace = mode 'Error',
+    replace = mode 'WarningMsg',
     command = mode 'Statement',
-    terminal = mode 'Function',
+    terminal = mode 'Identifier',
     inactive = {
         a = { fg = dim, bg = 'NONE' },
         b = { fg = dim, bg = 'NONE' },

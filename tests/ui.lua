@@ -130,6 +130,9 @@ local ok, err = xpcall(function()
         assert(lua [=[return #vim.api.nvim_list_uis() == 1]=])
         assert(lua [=[return require('vim._core.ui2').msg ~= nil and vim.o.cmdheight == 0]=])
         if case[3] then assert(lua [=[return vim.g.clipboard.name == 'OSC 52' and package.loaded['mini.animate'] == nil]=]) end
+        -- The same transparent scheme locally and over SSH.
+        assert(lua [=[return vim.g.colors_name == 'vim-classic' and vim.api.nvim_get_hl(0, { name = 'Normal' }).bg == nil
+            and vim.api.nvim_get_hl(0, { name = 'NormalFloat', link = false }).bg == nil]=])
         lua([[vim.api.nvim_set_current_dir(...); _G.original_ui_input = vim.ui.input]], { base })
         assert(lua [=[return vim.fn.maparg(' E', 'n') == '' and not Snacks.config.explorer.enabled]=])
 
