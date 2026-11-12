@@ -48,7 +48,8 @@ vim.keymap.set('n', '<leader>e', function()
     local path = vim.api.nvim_buf_get_name(0)
     local MiniFiles = require 'mini.files'
 
-    if path == '' then path = vim.uv.cwd() end
+    -- Terminal, grug-far and other special buffers have names that aren't paths.
+    if path == '' or not vim.uv.fs_stat(path) then path = vim.uv.cwd() end
     MiniFiles.open(path, false)
 end, { desc = 'Open mini.files' })
 

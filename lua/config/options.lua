@@ -40,7 +40,8 @@ opt.splitkeep = 'screen'
 opt.linebreak = true
 opt.virtualedit = 'block'
 
-opt.statuscolumn = '%s%C%=%{v:relnum == 0 ? v:lnum : v:relnum}   '
+-- Wrapped and virtual lines (v:virtnum ~= 0) get no number, like the default column.
+opt.statuscolumn = '%s%C%=%{v:virtnum != 0 ? "" : v:relnum ? v:relnum : v:lnum}   '
 
 -- Four-space defaults. Project-local settings and formatters can override them.
 opt.expandtab = true
