@@ -51,28 +51,6 @@ Formatting uses conform: Prettier (project-local first, then `PATH`) for web, da
 and Markdown files; rustfmt from the Rust toolchain; `vsg` for VHDL (installed
 separately). Rust is checked with Clippy.
 
-### VHDL formatting
-
-Press `Space c f` to format the current buffer. Conform uses the nearest VSG
-config above the VHDL file, then a user config such as
-`${XDG_CONFIG_HOME:-$HOME/.config}/vsg/.vsg.yaml`, then this checkout's
-[`.vsg.yaml`](.vsg.yaml). The first match supplies the complete style. To
-customize the default across projects, copy the bundled file to the user path.
-
-The bundled style uses four spaces, uppercase design and port names, and
-lowercase keywords and types. Optional labels and repeated closing names may
-be omitted. For direct CLI use of the bundled file, set `NVIM_VSG_RULES` to
-the absolute path of this checkout's `scripts/vsg_rules` directory. Neovim
-sets it automatically.
-
-Fixable edits reach the buffer even when a style violation needs manual work.
-If VSG changes a case-sensitive extended identifier, the formatter reports it
-and preserves the original buffer.
-Parser and config errors from a manual format appear in Neovim. On the SSH
-host, check `:set filetype?` for `vhdl`, `:echo exepath('vsg')` for the selected
-Mason or system executable, and `:ConformInfo` for the formatter log. This
-integration uses VSG's Python environment and PyYAML.
-
 ## Workspaces
 
 `nvim path/to/folder` opens that folder as a workspace and restores its files,
@@ -209,9 +187,6 @@ nvim --headless -u NONE -i NONE -l tests/startup.lua
 nvim --headless -u NONE -i NONE -l tests/refinements.lua
 nvim --headless -u NONE -i NONE -l tests/ui.lua
 ```
-
-With VSG on `PATH`, run `nvim --headless -u NONE -i NONE -l tests/vsg.lua`
-to exercise manual formatting with the real executable.
 
 The suites use temporary state and files, so your sessions are never touched. The
 UI suite attaches real wide and narrow UIs, simulates SSH and a fresh host, and
