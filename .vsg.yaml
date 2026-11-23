@@ -1,0 +1,42 @@
+local_rules: $NVIM_VSG_RULES
+rule:
+  global:
+    indent_size: 4
+  group:
+    "case::keyword": {case: lower}
+    "case::name": {case: upper}
+
+  # VSG includes type names and entity-class keywords in its name group.
+  type_mark_500: {case: lower}
+  type_004: {case: lower}
+  # The built-in enum rule also folds character literals ('a' and 'A').
+  # design_case_502 applies the name style to basic enum identifiers only.
+  type_500: {disable: true}
+  subtype_501: {case: lower}
+  interface_incomplete_type_declaration_501: {case: lower}
+  attribute_declaration_502: {case: lower}
+  entity_specification_503: {case: lower}
+  use_clause_502: {case_exceptions: [all]}
+
+  # Optional statement labels and repeated closing names may be present or absent.
+  process_016: {disable: true}
+  process_018: {disable: true}
+  loop_statement_006: {disable: true}
+  loop_statement_007: {disable: true}
+  entity_019: {disable: true}
+  architecture_024: {disable: true}
+  component_022: {disable: true}
+  block_007: {disable: true}
+  generate_011: {disable: true}
+  context_022: {disable: true}
+  function_020: {disable: true}
+  procedure_014: {disable: true}
+  package_014: {disable: true}
+  package_body_003: {disable: true}
+  record_type_definition_005: {disable: true}
+  case_019: {disable: true}
+  case_020: {disable: true}
+  concurrent_005: {disable: true}
+  procedure_call_001: {disable: true}
+  procedure_call_002: {disable: true}
+  report_statement_001: {disable: true}
