@@ -51,6 +51,23 @@ Formatting uses conform: Prettier (project-local first, then `PATH`) for web, da
 and Markdown files; rustfmt from the Rust toolchain; `vsg` for VHDL (installed
 separately). Rust is checked with Clippy.
 
+### VHDL formatting
+
+`Space c f` runs `vsg --fix`. VSG always gets the user-wide style
+`${XDG_CONFIG_HOME:-~/.config}/vsg/.vsg.yaml` first and the nearest project
+config (`.vsg.yaml`, `vsg_config.yaml`, …) on top of it, so a project only needs
+to list what it changes. If the user-wide file is missing, Neovim creates it
+from [`vsg/default.vsg.yaml`](vsg/default.vsg.yaml) and never overwrites it
+afterwards. That style uses 4-space indentation, lowercase keywords, types and
+port directions, uppercase entity, generic and port names, and makes labels
+and names after `end` optional.
+
+Fixes are applied even when violations VSG cannot fix remain (line length,
+for example). Config and VHDL syntax errors leave the buffer unchanged; run
+`vsg -f file.vhd -c ~/.config/vsg/.vsg.yaml` in a shell to see them.
+`:echo exepath('vsg')` shows which `vsg` runs; Mason's comes before the system
+one on `PATH`.
+
 ## Workspaces
 
 `nvim path/to/folder` opens that folder as a workspace and restores its files,

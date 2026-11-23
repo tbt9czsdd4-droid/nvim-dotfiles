@@ -1,0 +1,45 @@
+# Default VSG style. Neovim copies this file to
+# ${XDG_CONFIG_HOME:-~/.config}/vsg/.vsg.yaml if that file does not exist yet.
+# A project's own VSG config is applied on top of it.
+rule:
+  global:
+    indent_size: 4
+  group:
+    # entity, is, port, in, out, downto, ...
+    "case::keyword": {case: lower}
+
+  # Entity, component, generic and port names are uppercase,
+  # including where they are repeated (end lines, port and generic maps).
+  entity_008: {case: upper}
+  entity_012: {case: upper}
+  architecture_014: {case: upper}
+  component_008: {case: upper}
+  component_012: {case: upper}
+  generic_007: {case: upper}
+  port_010: {case: upper}
+  generic_map_002: {case: upper}
+  port_map_002: {case: upper}
+
+  # Types and port directions are lowercase.
+  type_mark_500: {case: lower}
+  port_019: {case: lower}
+
+  # Labels and repeated names after "end" are optional: neither required nor removed.
+  entity_019: {disable: true}
+  architecture_024: {disable: true}
+  component_022: {disable: true}
+  package_014: {disable: true}
+  package_body_003: {disable: true}
+  context_022: {disable: true}
+  function_020: {disable: true}
+  procedure_014: {disable: true}
+  record_type_definition_005: {disable: true}
+  process_016: {disable: true}
+  process_018: {disable: true}
+  block_007: {disable: true}
+  generate_011: {disable: true}
+  loop_statement_006: {disable: true}
+  loop_statement_007: {disable: true}
+  case_019: {disable: true}
+  case_020: {disable: true}
+  concurrent_005: {disable: true}

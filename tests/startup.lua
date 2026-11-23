@@ -98,6 +98,27 @@ local ok, err = xpcall(function()
         vim.g.autoformat = true; vim.b.autoformat = false; assert(f(0) == nil)
         vim.b.autoformat = nil; assert(f(0))
         vim.fn.maparg(' uF', 'n', false, true).callback(); vim.wait(150, function() return false end); assert(vim.b.autoformat == false and f(0) == nil)
+        -- VSG: a slow formatter gets a longer save timeout.
+        vim.bo.filetype = 'vhdl'; vim.b.autoformat = true; assert(f(0).timeout_ms == 3000)
+        vim.bo.filetype = ''; vim.b.autoformat = nil
+        -- VSG exits 1 after writing fixes when unfixable violations remain.
+        local vsg = captured.formatters.vsg
+        assert(vim.tbl_contains(vsg.exit_codes, 0) and vim.tbl_contains(vsg.exit_codes, 1))
+        -- The global style is created from the template, passed first, and
+        -- a project config is layered on top of it.
+        local root = vim.fn.tempname()
+        local project = root .. '/project/src'
+        vim.fn.mkdir(project, 'p')
+        vim.env.XDG_CONFIG_HOME = root .. '/xdg'
+        local global = root .. '/xdg/vsg/.vsg.yaml'
+        local args = vsg.args(nil, { dirname = project })
+        assert(vim.deep_equal(args, { '--fix', '-of', 'syntastic', '-f', '$FILENAME', '-c', global }), vim.inspect(args))
+        assert(vim.fn.readfile(global)[1] ~= nil)
+        vim.fn.writefile({ 'rule: {}' }, global)
+        vim.fn.writefile({ 'rule: {}' }, root .. '/project/.vsg.yaml')
+        args = vsg.args(nil, { dirname = project })
+        assert(vim.deep_equal(args, { '--fix', '-of', 'syntastic', '-f', '$FILENAME', '-c', global, root .. '/project/.vsg.yaml' }), vim.inspect(args))
+        assert(vim.deep_equal(vim.fn.readfile(global), { 'rule: {}' }))
     ]]
     -- Supported servers are enabled exactly when their executable is on PATH,
     -- including on partially provisioned hosts.
