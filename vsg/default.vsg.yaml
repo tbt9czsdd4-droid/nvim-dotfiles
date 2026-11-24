@@ -24,6 +24,9 @@ rule:
   type_mark_500: {case: lower}
   port_019: {case: lower}
 
+  # Parentheses around if/elsif conditions are left as written.
+  if_002: {disable: true}
+
   # Labels and repeated names after "end" are optional: neither required nor removed.
   entity_019: {disable: true}
   architecture_024: {disable: true}
